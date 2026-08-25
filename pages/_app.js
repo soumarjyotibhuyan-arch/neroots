@@ -2,6 +2,7 @@ import '../styles/globals.css';
 import Head from 'next/head';
 import { createContext, useContext, useState, useEffect } from 'react';
 import MobileNav from '../components/MobileNav';
+import CartDrawer from '../components/CartDrawer';
 
 export const StoreContext = createContext();
 
@@ -96,6 +97,11 @@ export default function App({ Component, pageProps }) {
     saveCartToStorage(newCart);
   };
 
+  const removeFromCart = (cartItemId) => {
+    let newCart = cart.filter(item => item.cartItemId !== cartItemId);
+    saveCartToStorage(newCart);
+  };
+
   const clearCart = () => {
     saveCartToStorage([]);
   };
@@ -113,6 +119,7 @@ export default function App({ Component, pageProps }) {
         setIsCartOpen,
         addToCart,
         updateQuantity,
+        removeFromCart,
         clearCart,
         showToast
       }}
@@ -124,6 +131,9 @@ export default function App({ Component, pageProps }) {
       </Head>
 
       <Component {...pageProps} />
+
+      {/* Global Slide-Over Cart Drawer */}
+      <CartDrawer />
 
       {/* Mobile & Tablet Bottom Navigation Bar */}
       <MobileNav />

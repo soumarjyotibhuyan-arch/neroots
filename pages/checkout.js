@@ -192,8 +192,40 @@ export default function Checkout() {
               </div>
             </div>
 
-            <div style={{ marginBottom: 24, fontSize: 12, color: 'var(--text-muted)' }}>
+            <div style={{ marginBottom: 20, fontSize: 12, color: 'var(--text-muted)' }}>
               🚚 Expected Express Delivery: 3 to 5 business days. In case of any transit damages, report within 48 hours for a free replacement under our <Link href="/refund-policy" style={{ color: 'var(--accent-spice)', textDecoration: 'underline' }}>Return &amp; Refund Policy</Link>.
+            </div>
+
+            <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'center' }}>
+              <a
+                href={`https://wa.me/919876543210?text=${encodeURIComponent(
+                  `*NE ROOTS ORDER CONFIRMATION #${completedOrder.id}*\n` +
+                  `*Customer:* ${completedOrder.customerName}\n` +
+                  `*Phone:* ${completedOrder.phone}\n` +
+                  `*Delivery Address:* ${completedOrder.address}\n` +
+                  `*Items:*\n` +
+                  completedOrder.cart.map(i => `- ${i.name} (${i.weight}) x ${i.quantity}: ₹${i.price * i.quantity}`).join('\n') +
+                  `\n*Total:* ₹${completedOrder.total} (${completedOrder.paymentMethod})`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: '#25D366',
+                  color: '#fff',
+                  padding: '14px 28px',
+                  borderRadius: 'var(--radius-full)',
+                  fontWeight: 700,
+                  fontSize: 15,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)',
+                  minHeight: 48,
+                  touchAction: 'manipulation'
+                }}
+              >
+                <span>💬</span> Track / Confirm Order via WhatsApp
+              </a>
             </div>
 
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
