@@ -735,9 +735,10 @@ export default function Admin() {
   // -------------------------------------------------------------
   // AUTHENTICATED ADMIN DASHBOARD
   // -------------------------------------------------------------
-  const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
-  const totalOrdersCount = orders.length;
-  const pendingOrdersCount = orders.filter(o => o.status?.includes('Pending') || o.status?.includes('Confirmed')).length;
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  const totalRevenue = safeOrders.reduce((sum, o) => sum + (Number(o?.total) || 0), 0);
+  const totalOrdersCount = safeOrders.length;
+  const pendingOrdersCount = safeOrders.filter(o => o?.status?.includes('Pending') || o?.status?.includes('Confirmed')).length;
   const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
 
   return (
@@ -861,7 +862,7 @@ export default function Admin() {
             onClick={() => setActiveTab('orders')}
             className={`admin-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
           >
-            📦 Customer Orders ({orders.length})
+            📦 Customer Orders ({safeOrders.length})
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
@@ -885,7 +886,7 @@ export default function Admin() {
             onClick={() => setActiveTab('reviews')}
             className={`admin-tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
           >
-            ⭐ Reviews ({reviews.length})
+            ⭐ Reviews ({customerReviews.length})
           </button>
           <button
             onClick={() => setActiveTab('admins')}
