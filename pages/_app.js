@@ -45,9 +45,11 @@ export default function App({ Component, pageProps }) {
 
   // Initialize Google Identity Services One Tap for returning shoppers
   useEffect(() => {
-    if (!user && typeof window !== 'undefined' && window.google?.accounts?.id) {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+    const isRealClientId = clientId && !clientId.includes('example') && !clientId.startsWith('1234567890');
+
+    if (isRealClientId && !user && typeof window !== 'undefined' && window.google?.accounts?.id) {
       try {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1234567890-example.apps.googleusercontent.com';
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: async (response) => {

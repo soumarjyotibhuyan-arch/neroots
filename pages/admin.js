@@ -107,11 +107,13 @@ export default function Admin() {
     initAdminAuth();
   }, []);
 
-  // Initialize Google Identity Services if available
+  // Initialize Google Identity Services if a valid Client ID is configured
   useEffect(() => {
-    if (!isAuthenticated && typeof window !== 'undefined' && window.google?.accounts?.id) {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+    const isRealClientId = clientId && !clientId.includes('example') && !clientId.startsWith('1234567890');
+
+    if (isRealClientId && !isAuthenticated && typeof window !== 'undefined' && window.google?.accounts?.id) {
       try {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1234567890-example.apps.googleusercontent.com';
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: handleGoogleCredentialResponse,
