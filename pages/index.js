@@ -189,26 +189,21 @@ export default function Home() {
           </Link>
 
           <div className="nav-actions">
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div className="nav-search-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
                 type="text"
                 placeholder="Search Bhut Jolokia, Kazi Nemu..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                style={{
-                  padding: '8px 16px 8px 36px',
-                  borderRadius: 'var(--radius-full)',
-                  border: '1px solid var(--border-color)',
-                  fontSize: 13,
-                  width: 240,
-                  background: 'var(--bg-cream)'
-                }}
+                className="nav-search-input"
+                aria-label="Search pickles"
               />
               <span style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', fontSize: 13 }}>🔍</span>
             </div>
 
             <Link
               href="/team"
+              className="desktop-nav-link"
               style={{
                 fontSize: 13,
                 fontWeight: 700,
@@ -221,6 +216,7 @@ export default function Home() {
 
             <Link
               href="/reviews"
+              className="desktop-nav-link"
               style={{
                 fontSize: 13,
                 fontWeight: 700,
@@ -271,31 +267,32 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Mobile-Friendly Search Bar */}
+        <div className="mobile-search-bar">
+          <input
+            type="text"
+            placeholder="🔍 Search Bhut Jolokia, Kazi Nemu, Bamboo shoot..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            aria-label="Search authentic pickles"
+          />
+        </div>
+
         {/* 5. Brand Promise Quote Strip from Official Label */}
-        <section style={{
-          background: '#ffffff',
-          borderRadius: 'var(--radius-md)',
-          padding: '24px 32px',
-          border: '1px solid var(--border-color)',
-          marginBottom: '36px',
-          boxShadow: 'var(--shadow-sm)',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '24px'
-        }}>
-          <div style={{ borderRight: '1px solid var(--border-subtle)', paddingRight: '20px' }}>
-            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--primary)', letterSpacing: 1, marginBottom: 4 }}>
+        <section className="brand-promise-strip">
+          <div className="promise-box">
+            <div className="promise-label">
               Our Promise
             </div>
-            <p style={{ fontSize: 14, color: 'var(--text-dark)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
+            <p className="promise-quote">
               &quot;We promise a bold, flavourful experience that celebrates the region&apos;s distinct spices and ingredients, connecting food lovers to the vibrant culture of North East India.&quot;
             </p>
           </div>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-navy)', letterSpacing: 1, marginBottom: 4 }}>
+          <div className="promise-box">
+            <div className="heritage-label">
               Heritage &amp; Freshness
             </div>
-            <p style={{ fontSize: 14, color: 'var(--text-dark)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
+            <p className="promise-quote">
               &quot;We capture the unique culinary heritage of the North East, offering a taste of home and tradition in every jar. Primarily operating within Assam, we ensure freshness and authenticity while supporting local communities.&quot;
             </p>
           </div>
