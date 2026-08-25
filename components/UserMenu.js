@@ -23,6 +23,13 @@ export default function UserMenu() {
     return <GoogleSignInBtn size="medium" label="Sign in" />;
   }
 
+  const isSuperAdmin = adminRole === 'super_admin' || user.email === 'utpalabhuyan29@gmail.com';
+  const roleDisplay = isSuperAdmin
+    ? 'Super Admin (Owner)'
+    : isAdmin
+    ? 'Store Administrator'
+    : 'Verified Customer';
+
   return (
     <div style={{ position: 'relative' }} ref={menuRef}>
       <button
@@ -35,9 +42,10 @@ export default function UserMenu() {
           background: '#ffffff',
           padding: '4px 12px 4px 6px',
           borderRadius: 'var(--radius-full)',
-          border: '1px solid var(--border-color)',
+          border: isAdmin ? '1.5px solid var(--primary)' : '1px solid var(--border-color)',
           cursor: 'pointer',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.06)'
+          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+          transition: 'all 0.2s ease'
         }}
         aria-label="User account menu"
       >
@@ -50,9 +58,13 @@ export default function UserMenu() {
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', maxWidth: 110, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {user.name}
           </span>
-          {isAdmin && (
-            <span style={{ fontSize: 10, color: '#008738', fontWeight: 700, marginTop: -2 }}>
-              ✓ Admin
+          {isAdmin ? (
+            <span style={{ fontSize: 10, color: isSuperAdmin ? '#b91c1c' : '#1d4ed8', fontWeight: 800, marginTop: -2 }}>
+              {isSuperAdmin ? '👑 Super Admin' : '⚡ Admin'}
+            </span>
+          ) : (
+            <span style={{ fontSize: 10, color: '#166534', fontWeight: 700, marginTop: -2 }}>
+              ✓ Customer
             </span>
           )}
         </div>
@@ -66,21 +78,34 @@ export default function UserMenu() {
             position: 'absolute',
             top: 'calc(100% + 8px)',
             right: 0,
-            width: 240,
+            width: 260,
             background: '#ffffff',
             borderRadius: 'var(--radius-md)',
             boxShadow: 'var(--shadow-lg)',
             border: '1px solid var(--border-subtle)',
-            padding: 12,
+            padding: 14,
             zIndex: 100,
             animation: 'fadeIn 0.15s ease'
           }}
         >
           <div style={{ paddingBottom: 10, borderBottom: '1px solid var(--border-color)', marginBottom: 8 }}>
-            <div style={{ fontWeight: 800, fontSize: 14 }}>{user.name}</div>
+            <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--text-dark)' }}>{user.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', wordBreak: 'break-all' }}>{user.email}</div>
-            <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#e6f4ea', color: '#137333', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>
-              ✓ Google Verified Customer
+            
+            <div style={{
+              marginTop: 8,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              background: isSuperAdmin ? '#fef2f2' : isAdmin ? '#eff6ff' : '#f0fdf4',
+              color: isSuperAdmin ? '#991b1b' : isAdmin ? '#1e40af' : '#166534',
+              border: `1px solid ${isSuperAdmin ? '#fecaca' : isAdmin ? '#bfdbfe' : '#bbf7d0'}`,
+              fontSize: 11,
+              fontWeight: 800,
+              padding: '3px 8px',
+              borderRadius: 6
+            }}>
+              {isSuperAdmin ? '👑 Verified Owner / Super Admin' : isAdmin ? '⚡ Verified Store Administrator' : '✓ Verified Google Customer'}
             </div>
           </div>
 
@@ -90,18 +115,19 @@ export default function UserMenu() {
                 href="/admin"
                 onClick={() => setMenuOpen(false)}
                 style={{
-                  padding: '8px 10px',
-                  borderRadius: 6,
+                  padding: '9px 12px',
+                  borderRadius: 8,
                   fontSize: 13,
-                  fontWeight: 700,
-                  color: 'var(--primary)',
-                  background: '#fef2f2',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  background: 'var(--primary)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 8
+                  gap: 8,
+                  boxShadow: '0 2px 6px rgba(217, 37, 37, 0.25)'
                 }}
               >
-                <span>⚙️</span> Store Admin Portal ({adminRole || 'Admin'})
+                <span>⚙️</span> Open Admin Dashboard
               </Link>
             )}
 
@@ -134,7 +160,7 @@ export default function UserMenu() {
                 gap: 8
               }}
             >
-              <span>⭐</span> Write a Verified Review
+              <span>⭐</span> Verified Customer Reviews
             </Link>
 
             <button
