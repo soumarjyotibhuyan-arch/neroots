@@ -188,6 +188,64 @@
   ],
   "orders": [
     {
+      "id": "PKL-3496",
+      "customerName": "Bikram Sharma",
+      "phone": "9811223344",
+      "email": "bikram@example.com",
+      "address": "Beltola Bazar, Guwahati - 781028",
+      "notes": "",
+      "paymentMethod": "Cash on Delivery",
+      "subtotal": 249,
+      "discount": 0,
+      "shipping": 49,
+      "total": 298,
+      "cart": [
+        {
+          "id": 2,
+          "name": "Kazi Nemu Lemon Pickle",
+          "weight": "250g",
+          "price": 249,
+          "quantity": 1,
+          "image": "/images/kazi_nemu_pickle.jpg"
+        }
+      ],
+      "status": "Pending (Cash on Delivery)",
+      "date": "2026-08-25 19:30"
+    },
+    {
+      "id": "PKL-3460",
+      "gatewayOrderId": "order_8a3821af18f6fe43",
+      "receiptId": "rcpt_1787686185191_7121",
+      "customerName": "Priyanshu Borah",
+      "phone": "9876543210",
+      "email": "priyanshu@example.com",
+      "address": "Zoo Road Tiniali, Guwahati - 781024",
+      "notes": "",
+      "customerId": null,
+      "paymentMethod": "UPI / Online Paid",
+      "subtotal": 598,
+      "discount": 0,
+      "shipping": 49,
+      "total": 647,
+      "cart": [
+        {
+          "id": 1,
+          "name": "Assam Bhut Jolokia Pickle",
+          "weight": "250g",
+          "price": 299,
+          "quantity": 2,
+          "image": "/images/bhut_jolokia_pickle.jpg"
+        }
+      ],
+      "status": "Confirmed (Online Paid)",
+      "paymentGateway": "Razorpay / Webhook",
+      "createdAt": "2026-08-25T19:29:45.194Z",
+      "date": "2026-08-25 19:29",
+      "paymentId": "pay_webhook_7788",
+      "paymentSignature": "mock_sig_test",
+      "paidAt": "2026-08-25T19:29:57.632Z"
+    },
+    {
       "id": "NER-2041",
       "customerName": "Aarav Sharma",
       "phone": "+91 98765 43210",

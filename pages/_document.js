@@ -31,6 +31,9 @@ export default function Document() {
 
         {/* Google Identity Services SDK */}
         <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+        {/* Razorpay Unified Payment Gateway SDK */}
+        <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </Head>
       <body>
         <Main />

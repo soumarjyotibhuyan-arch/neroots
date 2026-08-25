@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { useStore } from './_app';
 import GoogleSignInBtn from '../components/GoogleSignInBtn';
 import UserMenu from '../components/UserMenu';
+import DynamicUPIQRModal from '../components/DynamicUPIQRModal';
 
 export default function Checkout() {
   const router = useRouter();
@@ -17,13 +18,24 @@ export default function Checkout() {
   const [pincode, setPincode] = useState('');
   const [city, setCity] = useState('');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
+  const [paymentMethod, setPaymentMethod] = useState('UPI / Online Paid');
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [couponApplied, setCouponApplied] = useState('');
   const [consentChecked, setConsentChecked] = useState(true);
   const [loading, setLoading] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
+
+  // Dynamic UPI QR Modal state for desktop / fallback
+  const [isUPIModalOpen, setIsUPIModalOpen] = useState(false);
+  const [pendingPaymentOrder, setPendingPaymentOrder] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsMobile(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+    }
+  }, []);
 
   // Auto-fill customer name and email if logged in with Google
   useEffect(() => {
@@ -71,40 +83,162 @@ export default function Checkout() {
     }
 
     setLoading(true);
-    try {
-      const fullAddress = `${address.trim()}, ${city.trim()} - ${pincode.trim()}`;
-      const payload = {
-        customerName: name.trim(),
-        phone: phone.trim(),
-        email: email.trim() || (user?.email || ''),
-        address: fullAddress,
-        notes: notes.trim(),
-        paymentMethod,
-        discount,
-        shipping,
-        cart,
-        customerId: user?.id || null,
-        googleEmail: user?.email || null,
-        isGoogleVerified: Boolean(user)
-      };
+    const fullAddress = `${address.trim()}, ${city.trim()} - ${pincode.trim()}`;
 
-      const res = await fetch('/api/orders', {
+    try {
+      // -------------------------------------------------------------
+      // 1. CASH ON DELIVERY (COD) FLOW
+      // -------------------------------------------------------------
+      if (paymentMethod === 'Cash on Delivery') {
+        const payload = {
+          customerName: name.trim(),
+          phone: phone.trim(),
+          email: email.trim() || (user?.email || ''),
+          address: fullAddress,
+          notes: notes.trim(),
+          paymentMethod: 'Cash on Delivery',
+          discount,
+          shipping,
+          cart,
+          customerId: user?.id || null,
+          googleEmail: user?.email || null,
+          isGoogleVerified: Boolean(user)
+        };
+
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const orderData = await res.json();
+          setCompletedOrder(orderData);
+          clearCart();
+          showToast('✅ Cash on Delivery order placed successfully!');
+        } else {
+          showToast('❌ Failed to place COD order. Please try again.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // -------------------------------------------------------------
+      // 2. UNIFIED ONLINE PAYMENT (RAZORPAY + UPI INTENT / DYNAMIC QR)
+      // -------------------------------------------------------------
+      const orderInitRes = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          cart,
+          customerName: name.trim(),
+          email: email.trim() || (user?.email || ''),
+          phone: phone.trim(),
+          address: fullAddress,
+          discount,
+          notes: notes.trim(),
+          customerId: user?.id || null
+        })
       });
 
-      if (res.ok) {
-        const orderData = await res.json();
-        setCompletedOrder(orderData);
-        clearCart();
-        showToast('✅ Order placed successfully!');
+      const orderData = await orderInitRes.json();
+      if (!orderInitRes.ok || !orderData.success) {
+        showToast(`❌ ${orderData.error || 'Failed to initialize payment gateway'}`);
+        setLoading(false);
+        return;
+      }
+
+      // Check if Razorpay client SDK is loaded in browser
+      if (typeof window !== 'undefined' && window.Razorpay) {
+        const rzpOptions = {
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency || 'INR',
+          name: 'NE Roots (North East Roots)',
+          description: `Assam Artisanal Pickles • Order #${orderData.storeOrderId}`,
+          image: '/images/ner_logo_icon.jpg',
+          order_id: orderData.orderId,
+          prefill: {
+            name: name.trim(),
+            email: email.trim() || (user?.email || ''),
+            contact: phone.trim()
+          },
+          theme: {
+            color: '#e62b2b'
+          },
+          config: {
+            display: {
+              blocks: {
+                banks: {
+                  name: 'Instant Payment',
+                  instruments: [
+                    { method: 'upi' },
+                    { method: 'card' },
+                    { method: 'netbanking' }
+                  ]
+                }
+              },
+              sequence: ['block.banks'],
+              preferences: {
+                show_default_blocks: true
+              }
+            }
+          },
+          handler: async function (response) {
+            setLoading(true);
+            try {
+              const verifyRes = await fetch('/api/payment/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  storeOrderId: orderData.storeOrderId
+                })
+              });
+
+              const verifyData = await verifyRes.json();
+              if (verifyRes.ok && verifyData.success) {
+                setCompletedOrder(verifyData.order);
+                clearCart();
+                showToast('🎉 Payment verified! Order confirmed!');
+              } else {
+                showToast('⚠️ Payment received. Order status updating...');
+              }
+            } catch (err) {
+              console.error('Verify error:', err);
+            } finally {
+              setLoading(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setLoading(false);
+              showToast('ℹ️ Payment checkout closed. You can retry or scan the Dynamic UPI QR.');
+            }
+          }
+        };
+
+        const rzp = new window.Razorpay(rzpOptions);
+        rzp.on('payment.failed', function (response) {
+          setLoading(false);
+          showToast(`❌ Payment declined: ${response.error?.description || 'Transaction failed'}`);
+        });
+        rzp.open();
       } else {
-        showToast('❌ Failed to place order. Please try again.');
+        // Fallback to Dynamic UPI QR Modal with 5-minute timer
+        setPendingPaymentOrder({
+          orderId: orderData.storeOrderId,
+          gatewayOrderId: orderData.orderId,
+          amountRupees: orderData.amountRupees,
+          customerName: name.trim()
+        });
+        setIsUPIModalOpen(true);
       }
     } catch (err) {
       console.error(err);
-      showToast('❌ Network error while placing order.');
+      showToast('❌ Network error while initiating payment.');
     } finally {
       setLoading(false);
     }
@@ -657,6 +791,25 @@ export default function Checkout() {
           </div>
         )}
       </main>
+
+      {/* Desktop & Fallback Dynamic UPI QR Modal with 5-Minute Countdown Timer */}
+      {pendingPaymentOrder && (
+        <DynamicUPIQRModal
+          isOpen={isUPIModalOpen}
+          onClose={() => setIsUPIModalOpen(false)}
+          amountRupees={pendingPaymentOrder.amountRupees}
+          orderId={pendingPaymentOrder.orderId}
+          gatewayOrderId={pendingPaymentOrder.gatewayOrderId}
+          customerName={pendingPaymentOrder.customerName}
+          isMobile={isMobile}
+          onPaymentSuccess={(confirmedOrder) => {
+            setIsUPIModalOpen(false);
+            setCompletedOrder(confirmedOrder);
+            clearCart();
+            showToast('🎉 Payment confirmed! Order placed successfully!');
+          }}
+        />
+      )}
     </div>
   );
 }
