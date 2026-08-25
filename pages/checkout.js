@@ -3,10 +3,12 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useStore } from './_app';
+import GoogleSignInBtn from '../components/GoogleSignInBtn';
+import UserMenu from '../components/UserMenu';
 
 export default function Checkout() {
   const router = useRouter();
-  const { cart, cartSubtotal, clearCart, showToast } = useStore();
+  const { cart, cartSubtotal, clearCart, showToast, user } = useStore();
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -22,6 +24,14 @@ export default function Checkout() {
   const [consentChecked, setConsentChecked] = useState(true);
   const [loading, setLoading] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
+
+  // Auto-fill customer name and email if logged in with Google
+  useEffect(() => {
+    if (user) {
+      if (!name && user.name) setName(user.name);
+      if (!email && user.email) setEmail(user.email);
+    }
+  }, [user]);
 
   const shipping = cartSubtotal >= 599 || couponApplied === 'FREESHIP' ? 0 : 49;
   const total = Math.max(0, cartSubtotal - discount + shipping);
@@ -66,13 +76,16 @@ export default function Checkout() {
       const payload = {
         customerName: name.trim(),
         phone: phone.trim(),
-        email: email.trim(),
+        email: email.trim() || (user?.email || ''),
         address: fullAddress,
         notes: notes.trim(),
         paymentMethod,
         discount,
         shipping,
-        cart
+        cart,
+        customerId: user?.id || null,
+        googleEmail: user?.email || null,
+        isGoogleVerified: Boolean(user)
       };
 
       const res = await fetch('/api/orders', {
@@ -281,9 +294,12 @@ export default function Checkout() {
               <div className="brand-tagline">Artisanal Pickles of Assam</div>
             </div>
           </Link>
-          <Link href="/" style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)' }}>
-            ← Return to Store
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <UserMenu />
+            <Link href="/" style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)' }}>
+              ← Return to Store
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -319,9 +335,47 @@ export default function Checkout() {
               <form onSubmit={handlePlaceOrder} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 {/* Shipping Details Card */}
                 <div style={{ background: '#fff', padding: 24, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', boxShadow: '0 2px 8px rgba(217, 37, 37, 0.06)' }}>
-                  <h3 style={{ fontSize: 18, marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>📍</span> Shipping &amp; Contact Details
-                  </h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
+                    <h3 style={{ fontSize: 18, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span>📍</span> Shipping &amp; Contact Details
+                    </h3>
+                    {user && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#e6f4ea', color: '#137333', fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 'var(--radius-full)' }}>
+                        ✓ Google Verified Customer
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 1-Click Fast Checkout with Google Banner */}
+                  {!user ? (
+                    <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: 14, marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)' }}>
+                          ⚡ 1-Click Fast Checkout with Google
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                          Sign in to automatically fill your name and email.
+                        </div>
+                      </div>
+                      <GoogleSignInBtn size="medium" label="Fast Sign In" />
+                    </div>
+                  ) : (
+                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <img
+                        src={user.picture || 'https://lh3.googleusercontent.com/a/default-user=s96-c'}
+                        alt={user.name}
+                        style={{ width: 34, height: 34, borderRadius: '50%' }}
+                      />
+                      <div style={{ flex: 1, fontSize: 13 }}>
+                        <div style={{ fontWeight: 700, color: '#166534' }}>
+                          Signed in as {user.name}
+                        </div>
+                        <div style={{ color: '#4b5563', fontSize: 12 }}>
+                          {user.email} • Your order will be linked to your account
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div>

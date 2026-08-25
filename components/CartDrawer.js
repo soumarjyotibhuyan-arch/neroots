@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useStore } from '../pages/_app';
+import GoogleSignInBtn from './GoogleSignInBtn';
 
 export default function CartDrawer() {
   const {
@@ -10,7 +11,8 @@ export default function CartDrawer() {
     isCartOpen,
     setIsCartOpen,
     updateQuantity,
-    removeFromCart
+    removeFromCart,
+    user
   } = useStore();
 
   if (!isCartOpen) return null;
@@ -208,12 +210,27 @@ export default function CartDrawer() {
                 )}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, fontSize: 18, fontWeight: 800 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, fontSize: 18, fontWeight: 800 }}>
               <span>Final Amount:</span>
               <span style={{ color: 'var(--primary-dark)' }}>
                 ₹{cartSubtotal >= 599 ? cartSubtotal : cartSubtotal + 49}
               </span>
             </div>
+
+            {/* Google Identity User Status in Cart */}
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '6px 12px', borderRadius: 8, marginBottom: 12, fontSize: 12 }}>
+                <img src={user.picture || 'https://lh3.googleusercontent.com/a/default-user=s96-c'} alt={user.name} style={{ width: 20, height: 20, borderRadius: '50%' }} />
+                <span style={{ color: '#166534', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  ✓ Signed in as {user.name}
+                </span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', border: '1px dashed #cbd5e1', padding: '6px 10px', borderRadius: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>⚡ 1-Click Google Fill</span>
+                <GoogleSignInBtn size="small" label="Sign in" />
+              </div>
+            )}
 
             <Link
               href="/checkout"

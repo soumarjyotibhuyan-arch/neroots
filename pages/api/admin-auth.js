@@ -1,18 +1,8 @@
 import { getDB, saveDB } from '../../lib/db';
+import { verifyGoogleIdToken } from '../../lib/googleAuth';
 import { sanitizeObject, sanitizeString, checkRateLimit, registerAdminSession, validateAdminRequest } from '../../lib/security';
 
-function decodeGoogleJwt(token) {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-}
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // 1. Anti-Brute-Force Rate Limiting (Max 15 auth requests per minute)
   if (!checkRateLimit(req, res, { max: 15, windowMs: 60000, keyPrefix: 'admin_auth' })) {
     return;
@@ -50,24 +40,21 @@ export default function handler(req, res) {
       let userName = '';
       let userAvatar = '';
 
-      if (credential) {
-        const googleProfile = decodeGoogleJwt(credential);
-        if (!googleProfile || !googleProfile.email) {
-          return res.status(400).json({ success: false, error: 'Invalid Google credential token' });
+      try {
+        if (credential || email) {
+          const verified = await verifyGoogleIdToken(credential || email);
+          userEmail = verified.email;
+          userName = name || verified.name;
+          userAvatar = avatar || verified.picture;
+        } else {
+          return res.status(400).json({ success: false, error: 'Google email or credential required' });
         }
-        userEmail = sanitizeString(googleProfile.email, 100).toLowerCase();
-        userName = sanitizeString(googleProfile.name || userEmail.split('@')[0], 80);
-        userAvatar = sanitizeString(googleProfile.picture || 'https://lh3.googleusercontent.com/a/default-user=s96-c', 255);
-      } else if (email) {
-        userEmail = sanitizeString(email, 100).toLowerCase();
-        userName = sanitizeString(name || userEmail.split('@')[0], 80);
-        userAvatar = sanitizeString(avatar || 'https://lh3.googleusercontent.com/a/default-user=s96-c', 255);
-      } else {
-        return res.status(400).json({ success: false, error: 'Google email or credential required' });
+      } catch (err) {
+        return res.status(400).json({ success: false, error: err.message || 'Invalid Google credential token' });
       }
 
       // Check if user is in authorized admin list
-      const matchedAdmin = db.adminUsers.find(u => u.email.toLowerCase() === userEmail);
+      const matchedAdmin = db.adminUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
 
       // Fresh installation fallback: first Google user becomes the Owner
       if (!matchedAdmin && db.adminUsers.length === 0) {
@@ -114,7 +101,8 @@ export default function handler(req, res) {
       return res.status(200).json({
         success: true,
         token,
-        user: matchedAdmin
+        user: matchedAdmin,
+        message: `Welcome back, ${matchedAdmin.name}! Signed in as verified ${matchedAdmin.role}.`
       });
     }
 

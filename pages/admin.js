@@ -76,19 +76,35 @@ export default function Admin() {
 
   // Check saved authentication session on mount
   useEffect(() => {
-    try {
-      const savedToken = sessionStorage.getItem('pickle_admin_token');
-      const savedUser = sessionStorage.getItem('pickle_admin_user');
-      if (savedToken && savedUser) {
-        setIsAuthenticated(true);
-        setCurrentUser(JSON.parse(savedUser));
-        loadData(savedToken);
+    async function initAdminAuth() {
+      try {
+        const savedToken = sessionStorage.getItem('pickle_admin_token');
+        const savedUser = sessionStorage.getItem('pickle_admin_user');
+        if (savedToken && savedUser) {
+          setIsAuthenticated(true);
+          setCurrentUser(JSON.parse(savedUser));
+          loadData(savedToken);
+          setIsCheckingAuth(false);
+          return;
+        }
+
+        // If no token in sessionStorage, check active Google session cookie
+        const res = await fetch('/api/auth/google');
+        if (res.ok) {
+          const authData = await res.json();
+          if (authData.isAuthenticated && authData.isAdmin && authData.user?.email) {
+            await performGoogleAuth({ email: authData.user.email, name: authData.user.name });
+            setIsCheckingAuth(false);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Admin auth check error:', e);
+      } finally {
+        setIsCheckingAuth(false);
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsCheckingAuth(false);
     }
+    initAdminAuth();
   }, []);
 
   // Initialize Google Identity Services if available
@@ -700,16 +716,16 @@ export default function Admin() {
               <div style={{ fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 4 }}>
                 👥 Authorized Admin Google Accounts:
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <button
                   type="button"
                   onClick={() => {
-                    setGoogleEmailInput('admin@neroots.in');
-                    performGoogleAuth({ email: 'admin@neroots.in', name: "NE Roots Founder" });
+                    setGoogleEmailInput('utpalabhuyan29@gmail.com');
+                    performGoogleAuth({ email: 'utpalabhuyan29@gmail.com', name: "Utpala Bhuyan" });
                   }}
-                  style={{ background: '#fff', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: 6, fontSize: 12, textAlign: 'left', cursor: 'pointer' }}
+                  style={{ background: '#fff', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: 6, fontSize: 12, textAlign: 'left', cursor: 'pointer' }}
                 >
-                  👉 Click to sign in as: <strong>admin@neroots.in</strong> (NE Roots Founder)
+                  👑 <strong>utpalabhuyan29@gmail.com</strong> (Owner / Super Admin)
                 </button>
                 <button
                   type="button"
@@ -717,9 +733,9 @@ export default function Admin() {
                     setGoogleEmailInput('soumarjyotibhuyan@gmail.com');
                     performGoogleAuth({ email: 'soumarjyotibhuyan@gmail.com', name: "Soumarjyoti Bhuyan" });
                   }}
-                  style={{ background: '#fff', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: 6, fontSize: 12, textAlign: 'left', cursor: 'pointer' }}
+                  style={{ background: '#fff', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: 6, fontSize: 12, textAlign: 'left', cursor: 'pointer' }}
                 >
-                  👉 Click to sign in as: <strong>soumarjyotibhuyan@gmail.com</strong> (Manager)
+                  ⚡ <strong>soumarjyotibhuyan@gmail.com</strong> (Store Administrator)
                 </button>
               </div>
               <div style={{ marginTop: 8, color: 'var(--text-muted)', fontSize: 11 }}>

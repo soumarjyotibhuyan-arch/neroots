@@ -369,5 +369,43 @@
       "addedAt": "2026-08-25",
       "isGoogleVerified": true
     }
+  ],
+  "customers": [
+    {
+      "id": "CUST-MT922KHE",
+      "googleSub": "mock_757470616c61",
+      "email": "utpalabhuyan29@gmail.com",
+      "name": "utpalabhuyan29",
+      "picture": "https://lh3.googleusercontent.com/a/default-user=s96-c",
+      "email_verified": true,
+      "createdAt": "2026-08-25T19:26:12.530Z",
+      "lastLogin": "2026-08-25T19:26:12.530Z",
+      "savedAddresses": [],
+      "orderHistory": []
+    },
+    {
+      "id": "CUST-MT922RCK",
+      "googleSub": "mock_736f756d6172",
+      "email": "soumarjyotibhuyan@gmail.com",
+      "name": "soumarjyotibhuyan",
+      "picture": "https://lh3.googleusercontent.com/a/default-user=s96-c",
+      "email_verified": true,
+      "createdAt": "2026-08-25T19:26:21.428Z",
+      "lastLogin": "2026-08-25T19:26:21.428Z",
+      "savedAddresses": [],
+      "orderHistory": []
+    },
+    {
+      "id": "CUST-MT922YWZ",
+      "googleSub": "mock_73686f707065",
+      "email": "shopper@gmail.com",
+      "name": "shopper",
+      "picture": "https://lh3.googleusercontent.com/a/default-user=s96-c",
+      "email_verified": true,
+      "createdAt": "2026-08-25T19:26:31.235Z",
+      "lastLogin": "2026-08-25T19:26:31.235Z",
+      "savedAddresses": [],
+      "orderHistory": []
+    }
   ]
 }

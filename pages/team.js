@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useStore } from './_app';
+import UserMenu from '../components/UserMenu';
 
 export default function Team() {
   const { cart, cartCount, cartSubtotal, isCartOpen, setIsCartOpen, removeFromCart } = useStore();
@@ -75,6 +76,10 @@ export default function Team() {
             <Link href="/reviews" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)' }}>
               Reviews
             </Link>
+
+            {/* Google User Identity Menu */}
+            <UserMenu />
+
             <button
               onClick={() => setIsCartOpen(true)}
               className="cart-btn"

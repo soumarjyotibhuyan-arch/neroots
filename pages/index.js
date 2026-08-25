@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useStore } from './_app';
+import UserMenu from '../components/UserMenu';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -230,22 +231,8 @@ export default function Home() {
               ⭐ Reviews
             </Link>
 
-            <Link
-              href="/admin"
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: 'var(--accent-navy)',
-                padding: '8px 14px',
-                borderRadius: 'var(--radius-full)',
-                border: '1px solid var(--border-color)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6
-              }}
-            >
-              <span>🔒</span> Admin
-            </Link>
+            {/* Google User Identity Menu */}
+            <UserMenu />
 
             <button onClick={() => setIsCartOpen(true)} className="cart-btn" aria-label="View shopping basket">
               <span>🧺 Basket</span>

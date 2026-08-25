@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useStore } from './_app';
+import UserMenu from '../components/UserMenu';
+import GoogleSignInBtn from '../components/GoogleSignInBtn';
 
 export default function Reviews() {
   const { cart, cartCount, cartSubtotal, isCartOpen, setIsCartOpen, removeFromCart, showToast } = useStore();
@@ -178,6 +180,10 @@ export default function Reviews() {
             <Link href="/reviews" style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>
               Reviews ⭐
             </Link>
+
+            {/* Google User Identity Menu */}
+            <UserMenu />
+
             <button
               onClick={() => setIsCartOpen(true)}
               className="cart-btn"
@@ -447,6 +453,25 @@ export default function Reviews() {
               </button>
             </div>
 
+            {/* Google Authentication Status in Review Modal */}
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#e6f4ea', padding: '10px 14px', borderRadius: 8, marginBottom: 18, border: '1px solid #ceead6' }}>
+                <img src={user.picture || 'https://lh3.googleusercontent.com/a/default-user=s96-c'} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%' }} />
+                <div style={{ fontSize: 13 }}>
+                  <div style={{ fontWeight: 700, color: '#137333' }}>✓ Submitting as Google Verified Reviewer</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{user.name} ({user.email})</div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ background: '#f8f9fa', padding: '12px 14px', borderRadius: 8, marginBottom: 18, border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)' }}>Verified Shopper Badge</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Sign in with Google to earn a Verified badge</div>
+                </div>
+                <GoogleSignInBtn size="small" label="Sign in" />
+              </div>
+            )}
+
             <form onSubmit={handleReviewSubmit}>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Your Rating</label>
@@ -483,7 +508,7 @@ export default function Reviews() {
                   <input
                     type="text"
                     placeholder="e.g. Manas Pratim"
-                    value={author}
+                    value={author || (user?.name || '')}
                     onChange={e => setAuthor(e.target.value)}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
                     required
@@ -542,73 +567,6 @@ export default function Reviews() {
                 {submitting ? 'Submitting Review...' : 'Publish My Review'}
               </button>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Slide-Over Cart Drawer */}
-      {isCartOpen && (
-        <div className="cart-drawer-overlay" onClick={() => setIsCartOpen(false)}>
-          <div className="cart-drawer" onClick={e => e.stopPropagation()}>
-            <div className="cart-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <img src="/images/ner_logo_icon.jpg" alt="NE Roots Icon" style={{ width: 28, height: 28, borderRadius: 6 }} />
-                <div>
-                  <h3 style={{ fontSize: 18, margin: 0 }}>Your Pickle Basket</h3>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{cartCount} item(s) selected</span>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsCartOpen(false)}
-                style={{ background: 'none', fontSize: 24, color: 'var(--text-muted)' }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="cart-items">
-              {cart.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                  <div style={{ fontSize: 48, marginBottom: 12 }}>🧺</div>
-                  <h4>Your basket is empty</h4>
-                  <Link href="/" onClick={() => setIsCartOpen(false)} style={{ color: 'var(--primary)', fontWeight: 700, fontSize: 14 }}>
-                    Explore Pickles →
-                  </Link>
-                </div>
-              ) : (
-                cart.map(item => (
-                  <div key={item.cartItemId} className="cart-item">
-                    <img src={item.image} alt={item.name} className="cart-item-img" />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>{item.name}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pack: {item.weight} • Qty: {item.quantity}</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-                        <strong style={{ color: 'var(--primary-dark)' }}>₹{item.price * item.quantity}</strong>
-                        <button onClick={() => removeFromCart(item.cartItemId)} style={{ background: 'none', color: '#b91c1c', fontSize: 13 }}>
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {cart.length > 0 && (
-              <div className="cart-footer">
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 14 }}>
-                  <span>Items Total:</span>
-                  <strong>₹{cartSubtotal}</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, fontSize: 18, fontWeight: 800 }}>
-                  <span>Final Amount:</span>
-                  <span style={{ color: 'var(--primary-dark)' }}>₹{cartSubtotal >= 599 ? cartSubtotal : cartSubtotal + 49}</span>
-                </div>
-                <Link href="/checkout" onClick={() => setIsCartOpen(false)} className="checkout-btn">
-                  Proceed to Secure Checkout →
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       )}

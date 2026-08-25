@@ -15,6 +15,62 @@ export default function App({ Component, pageProps }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
 
+  // Google Customer & Admin Authentication State
+  const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminRole, setAdminRole] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  // Check saved session cookie / auth state on mount
+  useEffect(() => {
+    async function checkAuthSession() {
+      try {
+        const res = await fetch('/api/auth/google');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.isAuthenticated && data.user) {
+            setUser(data.user);
+            setIsAdmin(data.isAdmin);
+            setAdminRole(data.adminRole);
+          }
+        }
+      } catch (e) {
+        console.error('Session check error:', e);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    }
+    checkAuthSession();
+  }, []);
+
+  // Initialize Google Identity Services One Tap for returning shoppers
+  useEffect(() => {
+    if (!user && typeof window !== 'undefined' && window.google?.accounts?.id) {
+      try {
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1234567890-example.apps.googleusercontent.com';
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async (response) => {
+            if (response.credential) {
+              await loginWithGoogle(response.credential);
+            }
+          },
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+
+        // Trigger Google One Tap UI prompt
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            // Handled gracefully without blocking
+          }
+        });
+      } catch (err) {
+        console.warn('Google One Tap init note:', err.message);
+      }
+    }
+  }, [user]);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem('pickle_cart');
@@ -56,6 +112,46 @@ export default function App({ Component, pageProps }) {
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 3000);
+  };
+
+  const loginWithGoogle = async (credentialOrEmail) => {
+    try {
+      const payload = typeof credentialOrEmail === 'string' && credentialOrEmail.includes('.')
+        ? { credential: credentialOrEmail }
+        : { email: credentialOrEmail };
+
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setUser(data.user);
+        setIsAdmin(data.isAdmin);
+        setAdminRole(data.adminRole);
+        showToast(`🎉 Signed in with Google as ${data.user.name}!`);
+        return { success: true, user: data.user, isAdmin: data.isAdmin };
+      } else {
+        showToast(`⚠️ ${data.error || 'Google login failed'}`);
+        return { success: false, error: data.error };
+      }
+    } catch (e) {
+      console.error('Google Sign In Error:', e);
+      showToast('❌ Failed to connect to Google authentication.');
+      return { success: false, error: e.message };
+    }
+  };
+
+  const logoutGoogle = async () => {
+    try {
+      await fetch('/api/auth/google', { method: 'DELETE' });
+    } catch (e) {}
+    setUser(null);
+    setIsAdmin(false);
+    setAdminRole(null);
+    showToast('👋 You have signed out from Google.');
   };
 
   const addToCart = (product, weight = '250g') => {
@@ -121,7 +217,13 @@ export default function App({ Component, pageProps }) {
         updateQuantity,
         removeFromCart,
         clearCart,
-        showToast
+        showToast,
+        user,
+        isAdmin,
+        adminRole,
+        isAuthLoading,
+        loginWithGoogle,
+        logoutGoogle
       }}
     >
       <Head>
