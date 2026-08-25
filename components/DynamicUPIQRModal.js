@@ -14,6 +14,9 @@ export default function DynamicUPIQRModal({
   const [timeLeft, setTimeLeft] = useState(300);
   const [verifying, setVerifying] = useState(false);
   const [copiedUPI, setCopiedUPI] = useState(false);
+  const [activeTab, setActiveTab] = useState(isMobile ? 'intent' : 'qr'); // 'qr' | 'intent' | 'collect'
+  const [customerUPI, setCustomerUPI] = useState('');
+  const [collectSent, setCollectSent] = useState(false);
   const [vpa] = useState('neroots@icici');
 
   // Build standard NPCI UPI URI
@@ -24,6 +27,7 @@ export default function DynamicUPIQRModal({
   useEffect(() => {
     if (!isOpen) {
       setTimeLeft(300);
+      setCollectSent(false);
       return;
     }
 
@@ -50,6 +54,15 @@ export default function DynamicUPIQRModal({
     navigator.clipboard.writeText(vpa);
     setCopiedUPI(true);
     setTimeout(() => setCopiedUPI(false), 2500);
+  };
+
+  const handleSendCollect = (e) => {
+    e.preventDefault();
+    if (!customerUPI.includes('@')) {
+      alert('Please enter a valid UPI ID (e.g., yourname@oksbi or 9876543210@paytm)');
+      return;
+    }
+    setCollectSent(true);
   };
 
   const handleManualVerify = async () => {
@@ -90,7 +103,7 @@ export default function DynamicUPIQRModal({
         style={{
           background: '#ffffff',
           borderRadius: 20,
-          maxWidth: 440,
+          maxWidth: 460,
           width: '100%',
           padding: '28px 24px',
           boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
@@ -120,26 +133,108 @@ export default function DynamicUPIQRModal({
             fontSize: 16,
             color: '#6b7280'
           }}
-          aria-label="Close UPI QR"
+          aria-label="Close UPI Gateway"
         >
           ✕
         </button>
 
         {/* Header Branding */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
           <img src="/images/ner_logo_icon.jpg" alt="NE Roots Icon" style={{ width: 26, height: 26, borderRadius: 6 }} />
-          <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--primary-dark)' }}>NE Roots Express UPI</span>
+          <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--primary-dark)' }}>Razorpay Unified UPI Gateway</span>
         </div>
 
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-          Order ID: <strong>#{orderId}</strong> • Amount: <strong style={{ color: 'var(--primary)', fontSize: 18 }}>₹{amountRupees}</strong>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 }}>
+          Order: <strong>#{orderId}</strong> • Amount: <strong style={{ color: 'var(--primary)', fontSize: 18 }}>₹{amountRupees}</strong>
         </div>
 
         {timeLeft > 0 ? (
           <>
-            {/* Mobile UPI Intent Buttons */}
-            {isMobile && (
-              <div style={{ marginBottom: 20 }}>
+            {/* UPI Flow Selector Tabs */}
+            <div style={{ display: 'flex', background: '#f1f5f9', padding: 4, borderRadius: 'var(--radius-full)', marginBottom: 16 }}>
+              <button
+                type="button"
+                onClick={() => setActiveTab('qr')}
+                style={{
+                  flex: 1,
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-full)',
+                  border: 'none',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: activeTab === 'qr' ? '#ffffff' : 'transparent',
+                  color: activeTab === 'qr' ? 'var(--primary)' : '#64748b',
+                  boxShadow: activeTab === 'qr' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                }}
+              >
+                📱 Dynamic QR
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('intent')}
+                style={{
+                  flex: 1,
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-full)',
+                  border: 'none',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: activeTab === 'intent' ? '#ffffff' : 'transparent',
+                  color: activeTab === 'intent' ? 'var(--primary)' : '#64748b',
+                  boxShadow: activeTab === 'intent' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                }}
+              >
+                ⚡ UPI App Intent
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('collect')}
+                style={{
+                  flex: 1,
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-full)',
+                  border: 'none',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: activeTab === 'collect' ? '#ffffff' : 'transparent',
+                  color: activeTab === 'collect' ? 'var(--primary)' : '#64748b',
+                  boxShadow: activeTab === 'collect' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                }}
+              >
+                📥 Web Collect
+              </button>
+            </div>
+
+            {/* TAB 1: DYNAMIC QR CODE FLOW */}
+            {activeTab === 'qr' && (
+              <div>
+                <div style={{
+                  background: '#ffffff',
+                  padding: 12,
+                  borderRadius: 14,
+                  border: '2px solid #e2e8f0',
+                  display: 'inline-block',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                  marginBottom: 12
+                }}>
+                  <img
+                    src={qrCodeUrl}
+                    alt="Scan to Pay NE Roots Pickles via UPI"
+                    style={{ width: 175, height: 175, display: 'block', margin: '0 auto' }}
+                  />
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-dark)', fontWeight: 600, marginBottom: 8 }}>
+                  Scan with Google Pay, PhonePe, Paytm, or CRED
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: UPI INTENT FLOW (MOBILE DIRECT APP SWITCH) */}
+            {activeTab === 'intent' && (
+              <div style={{ padding: '8px 0 16px' }}>
                 <a
                   href={upiUri}
                   style={{
@@ -158,35 +253,81 @@ export default function DynamicUPIQRModal({
                     marginBottom: 12
                   }}
                 >
-                  <span>⚡ Pay via Installed UPI App</span>
+                  <span>⚡ Pay ₹{amountRupees} via Installed UPI App</span>
                 </a>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  Opens Google Pay, PhonePe, Paytm, or CRED directly on your phone
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0' }}>
-                  <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }}></div>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Or Scan QR Code</span>
-                  <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }}></div>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, margin: '0 0 12px' }}>
+                  Direct intent flow automatically opens Google Pay, PhonePe, Paytm, or CRED on your mobile device with pre-filled order details.
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 14, fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                  <span>🟢 GPay</span>
+                  <span>🟣 PhonePe</span>
+                  <span>🔵 Paytm</span>
+                  <span>⚫ BHIM</span>
                 </div>
               </div>
             )}
 
-            {/* Dynamic QR Code Card */}
-            <div style={{
-              background: '#ffffff',
-              padding: 14,
-              borderRadius: 14,
-              border: '2px solid #e5e7eb',
-              display: 'inline-block',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-              marginBottom: 14
-            }}>
-              <img
-                src={qrCodeUrl}
-                alt="Scan to Pay NE Roots Pickles via UPI"
-                style={{ width: 190, height: 190, display: 'block', margin: '0 auto' }}
-              />
-            </div>
+            {/* TAB 3: WEB COLLECT FLOW (UPI ID PULL REQUEST) */}
+            {activeTab === 'collect' && (
+              <div style={{ padding: '8px 0 16px', textAlign: 'left' }}>
+                {!collectSent ? (
+                  <form onSubmit={handleSendCollect}>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
+                      Enter Your UPI ID / VPA
+                    </label>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                      <input
+                        type="text"
+                        placeholder="e.g. mobile@paytm or user@oksbi"
+                        value={customerUPI}
+                        onChange={e => setCustomerUPI(e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          border: '1px solid var(--border-color)',
+                          fontSize: 13
+                        }}
+                        required
+                      />
+                      <button
+                        type="submit"
+                        style={{
+                          background: 'var(--primary)',
+                          color: '#fff',
+                          padding: '10px 16px',
+                          borderRadius: 8,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          border: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Request
+                      </button>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      A collect notification will be sent to your UPI app for ₹{amountRupees}.
+                    </div>
+                  </form>
+                ) : (
+                  <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: 14, borderRadius: 10, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, marginBottom: 4 }}>📲</div>
+                    <div style={{ fontWeight: 700, color: '#166534', fontSize: 13 }}>Collect Request Sent to {customerUPI}!</div>
+                    <p style={{ fontSize: 12, color: '#4b5563', margin: '6px 0 10px' }}>
+                      Please open your UPI app, approve the request for ₹{amountRupees}, then click verify below.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setCollectSent(false)}
+                      style={{ background: 'none', border: 'none', color: '#1d4ed8', fontSize: 11, textDecoration: 'underline', cursor: 'pointer' }}
+                    >
+                      Change UPI ID
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Live Expiration Countdown Timer */}
             <div style={{
@@ -197,20 +338,12 @@ export default function DynamicUPIQRModal({
               color: timeLeft < 60 ? '#b91c1c' : '#166534',
               padding: '6px 14px',
               borderRadius: 'var(--radius-full)',
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 700,
-              marginBottom: 16
+              margin: '12px 0 16px'
             }}>
               <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: timeLeft < 60 ? '#ef4444' : '#22c55e', animation: 'pulse 1s infinite' }}></span>
-              QR Expires in: <strong>{formatTime(timeLeft)}</strong>
-            </div>
-
-            {/* Supported UPI Apps Row */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 14, fontSize: 11, color: 'var(--text-muted)', marginBottom: 16, fontWeight: 600 }}>
-              <span>🟢 Google Pay</span>
-              <span>🟣 PhonePe</span>
-              <span>🔵 Paytm</span>
-              <span>⚫ BHIM</span>
+              Session Expires in: <strong>{formatTime(timeLeft)}</strong>
             </div>
 
             {/* Copy VPA Option */}
@@ -223,7 +356,7 @@ export default function DynamicUPIQRModal({
               padding: '8px 12px',
               borderRadius: 8,
               fontSize: 12,
-              marginBottom: 18
+              marginBottom: 16
             }}>
               <div style={{ textAlign: 'left' }}>
                 <span style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', display: 'block' }}>Merchant UPI VPA</span>
@@ -291,9 +424,9 @@ export default function DynamicUPIQRModal({
           /* Expired State */
           <div style={{ padding: '20px 0' }}>
             <div style={{ fontSize: 36, marginBottom: 10 }}>⏳</div>
-            <h3 style={{ fontSize: 18, color: '#b91c1c', marginBottom: 6 }}>QR Code Expired</h3>
+            <h3 style={{ fontSize: 18, color: '#b91c1c', marginBottom: 6 }}>Session Expired</h3>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-              The 5-minute payment session has timed out to release reserved inventory.
+              The 5-minute payment session has timed out to release reserved pickle stock.
             </p>
             <button
               type="button"
