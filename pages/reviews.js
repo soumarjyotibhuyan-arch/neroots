@@ -193,18 +193,17 @@ export default function Reviews() {
 
       {/* Hero Reviews Section */}
       <main className="container" style={{ flex: 1, padding: '40px 20px' }}>
-        <div style={{
-          background: '#ffffff',
-          borderRadius: 'var(--radius-lg)',
-          padding: '36px',
-          border: '1px solid var(--border-color)',
-          boxShadow: 'var(--shadow-md)',
-          marginBottom: '36px',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1.2fr',
-          gap: '36px',
-          alignItems: 'center'
-        }}>
+        <section
+          className="reviews-hero-card"
+          style={{
+            background: '#ffffff',
+            borderRadius: 'var(--radius-lg)',
+            padding: '36px 28px',
+            border: '1px solid var(--border-color)',
+            boxShadow: 'var(--shadow-md)',
+            marginBottom: '36px'
+          }}
+        >
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff5f5', color: 'var(--primary)', padding: '4px 14px', borderRadius: 'var(--radius-full)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
               <span>⭐</span> Verified Customer Reviews
@@ -275,7 +274,7 @@ export default function Reviews() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Filter Controls */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
@@ -344,7 +343,7 @@ export default function Reviews() {
             </button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '50px' }}>
+          <div className="reviews-grid" style={{ marginBottom: '50px' }}>
             {filteredReviews.map(rev => (
               <article
                 key={rev.id}
@@ -430,30 +429,12 @@ export default function Reviews() {
       {/* Write a Review Modal */}
       {isModalOpen && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.65)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-          }}
+          className="responsive-modal-overlay"
           onClick={() => setIsModalOpen(false)}
         >
           <div
-            style={{
-              background: '#ffffff',
-              borderRadius: 'var(--radius-lg)',
-              maxWidth: 520,
-              width: '100%',
-              padding: '32px',
-              boxShadow: 'var(--shadow-lg)',
-              maxHeight: '90vh',
-              overflowY: 'auto'
-            }}
+            className="responsive-modal-box"
+            style={{ maxWidth: 540 }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>

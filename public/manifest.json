@@ -1,0 +1,35 @@
+{
+  "name": "NE Roots | Authentic North Eastern Pickles",
+  "short_name": "NE Roots",
+  "description": "Handcrafted indigenous pickles from Assam, Bhut Jolokia ghost peppers, GI-tagged Kazi Nemu lemons, and fermented bamboo shoots.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fdfaf6",
+  "theme_color": "#e62b2b",
+  "categories": ["shopping", "food"],
+  "icons": [
+    {
+      "src": "/images/ner_logo_icon.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/brand_logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}

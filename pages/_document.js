@@ -9,7 +9,12 @@ export default function Document() {
         <meta name="application-name" content="NE Roots" />
         <meta name="apple-mobile-web-app-title" content="NE Roots" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
 
         {/* Favicon & Brand Icons */}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />

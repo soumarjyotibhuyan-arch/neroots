@@ -1,6 +1,7 @@
 import '../styles/globals.css';
 import Head from 'next/head';
 import { createContext, useContext, useState, useEffect } from 'react';
+import MobileNav from '../components/MobileNav';
 
 export const StoreContext = createContext();
 
@@ -23,6 +24,21 @@ export default function App({ Component, pageProps }) {
       console.error('Failed to load cart from storage', e);
     }
   }, []);
+
+  // Prevent background scroll on iOS and Android when cart drawer or modal is open
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
+    };
+  }, [isCartOpen]);
 
   const saveCartToStorage = (newCart) => {
     setCart(newCart);
@@ -102,12 +118,15 @@ export default function App({ Component, pageProps }) {
       }}
     >
       <Head>
-        <title>Nani&apos;s Rasoi - Artisanal Indian Pickles & Achaar</title>
-        <meta name="description" content="Handcrafted traditional Indian pickles made with cold-pressed mustard oil, sun-dried raw spices, and traditional recipes." />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>NE Roots | Authentic North Eastern Pickles • Handcrafted in Assam</title>
+        <meta name="description" content="Artisanal North Eastern pickles made with cold-pressed mustard oil, Bhut Jolokia ghost peppers, Kazi Nemu lemons, and fermented bamboo shoot." />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
       </Head>
 
       <Component {...pageProps} />
+
+      {/* Mobile & Tablet Bottom Navigation Bar */}
+      <MobileNav />
 
       {/* Global Toast Notifications */}
       <div className="toast-container">

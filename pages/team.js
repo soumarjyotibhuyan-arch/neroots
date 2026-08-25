@@ -90,23 +90,22 @@ export default function Team() {
 
       {/* Hero Story Banner */}
       <main className="container" style={{ flex: 1, padding: '40px 20px' }}>
-        <section style={{
-          background: '#ffffff',
-          borderRadius: 'var(--radius-lg)',
-          padding: '44px',
-          border: '1px solid var(--border-color)',
-          boxShadow: 'var(--shadow-md)',
-          marginBottom: '40px',
-          display: 'grid',
-          gridTemplateColumns: '1.2fr 0.8fr',
-          gap: '40px',
-          alignItems: 'center'
-        }}>
+        <section
+          className="team-story-grid"
+          style={{
+            background: '#ffffff',
+            borderRadius: 'var(--radius-lg)',
+            padding: '36px 28px',
+            border: '1px solid var(--border-color)',
+            boxShadow: 'var(--shadow-md)',
+            marginBottom: '36px'
+          }}
+        >
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff5f5', color: 'var(--primary)', padding: '4px 14px', borderRadius: 'var(--radius-full)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
               <span>🏺</span> Our Story &amp; Vision
             </div>
-            <h1 style={{ fontSize: 34, lineHeight: 1.2, margin: '0 0 16px 0', color: 'var(--text-dark)' }}>
+            <h1 style={{ fontSize: 32, lineHeight: 1.2, margin: '0 0 16px 0', color: 'var(--text-dark)' }}>
               {companyStory.headline || 'Rooted in Assam, Dedicated to North Eastern Heritage'}
             </h1>
             <p style={{ color: 'var(--text-dark)', fontSize: 15, lineHeight: 1.7, margin: '0 0 16px 0' }}>
@@ -130,10 +129,10 @@ export default function Team() {
         <section style={{
           background: '#ffffff',
           borderRadius: 'var(--radius-md)',
-          padding: '32px',
+          padding: '32px 24px',
           border: '1px solid var(--border-color)',
           boxShadow: 'var(--shadow-sm)',
-          marginBottom: '40px'
+          marginBottom: '36px'
         }}>
           <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 24px auto' }}>
             <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--primary)', letterSpacing: 1 }}>
@@ -142,7 +141,7 @@ export default function Team() {
             <h2 style={{ fontSize: 24, margin: '6px 0 0 0' }}>The NE Roots Promise</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+          <div className="team-pillars-grid">
             {(companyStory.commitments || [
               "100% Sourced within North East India",
               "No Chemical Preservatives or Synthetic Colours",
@@ -167,8 +166,8 @@ export default function Team() {
             <span style={{ background: '#fff5f5', color: 'var(--primary)', padding: '4px 14px', borderRadius: 'var(--radius-full)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
               The Custodians of Taste
             </span>
-            <h2 style={{ fontSize: 30, margin: '10px 0 8px 0' }}>Meet Our Leadership &amp; Culinary Team</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 15 }}>
+            <h2 style={{ fontSize: 28, margin: '10px 0 8px 0' }}>Meet Our Leadership &amp; Culinary Team</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
               Passionate innovators, master picklers, and agricultural specialists working tirelessly from Assam to bring you gourmet perfection.
             </p>
           </div>
@@ -178,7 +177,7 @@ export default function Team() {
               <p style={{ color: 'var(--text-muted)' }}>Loading team profiles...</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '28px' }}>
+            <div className="team-cards-grid">
               {team.map(member => (
                 <div
                   key={member.id}

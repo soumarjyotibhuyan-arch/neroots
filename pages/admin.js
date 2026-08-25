@@ -829,12 +829,7 @@ export default function Admin() {
         </div>
 
         {/* Stats Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 20,
-          marginBottom: 36
-        }}>
+        <div className="admin-stats-grid">
           <div style={{ background: '#fff', padding: 22, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Total Revenue</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary-dark)', marginTop: 4 }}>₹{totalRevenue.toLocaleString()}</div>
@@ -861,88 +856,40 @@ export default function Admin() {
         </div>
 
         {/* Tab Switcher */}
-        <div style={{ display: 'flex', gap: 12, borderBottom: '2px solid var(--border-color)', marginBottom: 28, flexWrap: 'wrap' }}>
+        <div className="admin-tab-bar">
           <button
             onClick={() => setActiveTab('orders')}
-            style={{
-              background: 'none',
-              padding: '12px 20px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: activeTab === 'orders' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'orders' ? '3px solid var(--primary)' : '3px solid transparent',
-              marginBottom: -2
-            }}
+            className={`admin-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
           >
             📦 Customer Orders ({orders.length})
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
-            style={{
-              background: 'none',
-              padding: '12px 20px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: activeTab === 'inventory' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'inventory' ? '3px solid var(--primary)' : '3px solid transparent',
-              marginBottom: -2
-            }}
+            className={`admin-tab-btn ${activeTab === 'inventory' ? 'active' : ''}`}
           >
             🥒 Pickle Catalog ({products.length})
           </button>
           <button
             onClick={() => setActiveTab('add')}
-            style={{
-              background: 'none',
-              padding: '12px 20px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: activeTab === 'add' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'add' ? '3px solid var(--primary)' : '3px solid transparent',
-              marginBottom: -2
-            }}
+            className={`admin-tab-btn ${activeTab === 'add' ? 'active' : ''}`}
           >
             ➕ Add New Pickle
           </button>
           <button
             onClick={() => setActiveTab('team_story')}
-            style={{
-              background: 'none',
-              padding: '12px 20px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: activeTab === 'team_story' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'team_story' ? '3px solid var(--primary)' : '3px solid transparent',
-              marginBottom: -2
-            }}
+            className={`admin-tab-btn ${activeTab === 'team_story' ? 'active' : ''}`}
           >
             👥 About Team &amp; Story Editor ({teamMembers.length})
           </button>
           <button
             onClick={() => setActiveTab('reviews')}
-            style={{
-              background: 'none',
-              padding: '12px 20px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: activeTab === 'reviews' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'reviews' ? '3px solid var(--primary)' : '3px solid transparent',
-              marginBottom: -2
-            }}
+            className={`admin-tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
           >
-            ⭐ Reviews Moderator ({customerReviews.length})
+            ⭐ Reviews ({reviews.length})
           </button>
           <button
             onClick={() => setActiveTab('admins')}
-            style={{
-              background: 'none',
-              padding: '12px 20px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: activeTab === 'admins' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'admins' ? '3px solid var(--primary)' : '3px solid transparent',
-              marginBottom: -2
-            }}
+            className={`admin-tab-btn ${activeTab === 'admins' ? 'active' : ''}`}
           >
             🔐 Google Whitelist ({adminTeam.length})
           </button>
@@ -1647,30 +1594,12 @@ export default function Admin() {
         {/* EDIT PRODUCT MODAL */}
         {editingProduct && (
           <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.65)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px'
-            }}
+            className="responsive-modal-overlay"
             onClick={() => setEditingProduct(null)}
           >
             <div
-              style={{
-                background: '#ffffff',
-                borderRadius: 'var(--radius-lg)',
-                maxWidth: 640,
-                width: '100%',
-                padding: '32px',
-                boxShadow: 'var(--shadow-lg)',
-                maxHeight: '90vh',
-                overflowY: 'auto'
-              }}
+              className="responsive-modal-box"
+              style={{ maxWidth: 640 }}
               onClick={e => e.stopPropagation()}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -1840,30 +1769,12 @@ export default function Admin() {
         {/* EDIT TEAM MEMBER MODAL */}
         {editingTeamMember && (
           <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.65)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px'
-            }}
+            className="responsive-modal-overlay"
             onClick={() => setEditingTeamMember(null)}
           >
             <div
-              style={{
-                background: '#ffffff',
-                borderRadius: 'var(--radius-lg)',
-                maxWidth: 580,
-                width: '100%',
-                padding: '32px',
-                boxShadow: 'var(--shadow-lg)',
-                maxHeight: '90vh',
-                overflowY: 'auto'
-              }}
+              className="responsive-modal-box"
+              style={{ maxWidth: 580 }}
               onClick={e => e.stopPropagation()}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>

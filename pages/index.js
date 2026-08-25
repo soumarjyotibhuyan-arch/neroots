@@ -453,6 +453,7 @@ export default function Home() {
       {isCartOpen && (
         <div className="cart-drawer-overlay" onClick={() => setIsCartOpen(false)}>
           <div className="cart-drawer" onClick={e => e.stopPropagation()}>
+            <div className="cart-drag-handle"></div>
             <div className="cart-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <img src="/images/ner_logo_icon.jpg" alt="NE Roots Icon" style={{ width: 28, height: 28, borderRadius: 6 }} />
@@ -463,7 +464,7 @@ export default function Home() {
               </div>
               <button
                 onClick={() => setIsCartOpen(false)}
-                style={{ background: 'none', fontSize: 24, color: 'var(--text-muted)' }}
+                style={{ background: 'none', fontSize: 24, color: 'var(--text-muted)', minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 aria-label="Close basket"
               >
                 ✕
@@ -501,18 +502,18 @@ export default function Home() {
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 6 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 8, background: '#fdfaf6' }}>
                           <button
                             onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
-                            style={{ padding: '2px 8px', background: 'none', fontWeight: 700 }}
+                            style={{ padding: '6px 12px', background: 'none', fontWeight: 800, fontSize: 16, minWidth: 36, minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             aria-label="Decrease quantity"
                           >
                             -
                           </button>
-                          <span style={{ padding: '0 8px', fontSize: 13, fontWeight: 700 }}>{item.quantity}</span>
+                          <span style={{ padding: '0 8px', fontSize: 14, fontWeight: 700 }}>{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
-                            style={{ padding: '2px 8px', background: 'none', fontWeight: 700 }}
+                            style={{ padding: '6px 12px', background: 'none', fontWeight: 800, fontSize: 16, minWidth: 36, minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             aria-label="Increase quantity"
                           >
                             +
@@ -525,7 +526,7 @@ export default function Home() {
 
                         <button
                           onClick={() => removeFromCart(item.cartItemId)}
-                          style={{ background: 'none', color: '#b91c1c', fontSize: 13 }}
+                          style={{ background: 'none', color: '#b91c1c', fontSize: 14, minWidth: 36, minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           aria-label="Remove item"
                         >
                           🗑️
