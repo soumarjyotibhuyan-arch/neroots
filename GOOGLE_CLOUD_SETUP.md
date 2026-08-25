@@ -33,40 +33,27 @@ This guide provides step-by-step instructions to configure **Google Cloud OAuth 
 
 ---
 
-### Step 3: Add Scopes
+### Step 3: Create OAuth 2.0 Web Client Credentials
 
-1. Click **Add or Remove Scopes**.
-2. Select the three essential non-sensitive scopes:
-   - `.../auth/userinfo.email` (See your primary Google Account email address)
-   - `.../auth/userinfo.profile` (See your personal info, including any personal info you've made publicly available)
-   - `openid` (Associate you with your personal info on Google)
-3. Click **Update** > **Save and Continue**.
-
----
-
-### Step 4: Create OAuth 2.0 Web Client Credentials
-
-1. In the left sidebar, click **Credentials**.
-2. Click **+ Create Credentials** at the top and select **OAuth client ID**.
-3. **Application type**: Select **Web application**.
-4. **Name**: `NE Roots Web Client`.
-5. **Authorized JavaScript Origins**:
-   Add the following URLs:
+1. Go to **APIs & Services > Credentials**.
+2. Click **+ CREATE CREDENTIALS** and choose **OAuth client ID**.
+3. Select **Application type**: **Web application**.
+4. Set **Name**: `NE Roots Web Storefront`.
+5. Under **Authorized JavaScript origins**, click **+ ADD URI** and add:
    - `http://localhost:3000`
-   - `http://127.0.0.1:3000`
-   - `https://pickle-store-murex.vercel.app`
-   - `https://neroots.in` (if using custom domain)
-6. **Authorized Redirect URIs**:
+   - `https://neroots-murex.vercel.app`
+   - `https://neroots.vercel.app`
+6. Under **Authorized redirect URIs**, click **+ ADD URI** and add:
    - `http://localhost:3000`
-   - `https://pickle-store-murex.vercel.app`
-   - `https://pickle-store-murex.vercel.app/admin`
-   - `https://pickle-store-murex.vercel.app/checkout`
+   - `https://neroots-murex.vercel.app`
+   - `https://neroots-murex.vercel.app/admin`
+   - `https://neroots-murex.vercel.app/checkout`
 7. Click **Create**.
 8. A modal will appear showing your **Client ID** (e.g. `123456789012-xxxx.apps.googleusercontent.com`) and **Client Secret**.
 
 ---
 
-### Step 5: Configure Environment Variables
+### Step 4: Configure Environment Variables
 
 #### 1. In Local Development (`.env.local`)
 Create or edit `.env.local` in your project root:

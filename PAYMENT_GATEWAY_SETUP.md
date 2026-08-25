@@ -13,7 +13,7 @@ This guide provides step-by-step instructions to configure **Razorpay / UPI Inte
    - **Business Type**: Proprietorship / Private Limited
    - **Category**: Food & FMCG / E-Commerce (Pickles & Preserves)
    - **FSSAI License**: `20326101000625`
-   - **Store Website**: `https://pickle-store-murex.vercel.app` (or `https://neroots.in`)
+   - **Store Website**: `https://neroots-murex.vercel.app` (or `https://neroots.vercel.app`)
    - **Bank Account**: Enter business bank account for daily T+1 automated payouts.
 
 ---
@@ -84,7 +84,7 @@ Webhooks ensure that if a customer closes their browser tab or loses connectivit
 2. Click **+ Add New Webhook**.
 3. **Webhook URL**:
    ```
-   https://pickle-store-murex.vercel.app/api/payment/webhook
+   https://neroots-murex.vercel.app/api/payment/webhook
    ```
 4. **Secret**: Enter your secret (e.g. `ne_roots_webhook_secret_2026`). Set this same value in `RAZORPAY_WEBHOOK_SECRET`.
 5. **Active Events**: Check the following events:
