@@ -1,0 +1,7 @@
+# NE Roots (North East Roots) - Robots Configuration
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://neroots.in/sitemap.xml
