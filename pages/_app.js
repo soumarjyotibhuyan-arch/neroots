@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { createContext, useContext, useState, useEffect } from 'react';
 import MobileNav from '../components/MobileNav';
 import CartDrawer from '../components/CartDrawer';
+import StickyCartBar from '../components/StickyCartBar';
 
 export const StoreContext = createContext();
 
@@ -238,6 +239,9 @@ export default function App({ Component, pageProps }) {
 
       {/* Global Slide-Over Cart Drawer */}
       <CartDrawer />
+
+      {/* Floating Sticky Mobile Cart Thumb-Bar */}
+      <StickyCartBar />
 
       {/* Mobile & Tablet Bottom Navigation Bar */}
       <MobileNav />

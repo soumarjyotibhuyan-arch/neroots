@@ -157,54 +157,60 @@ export default function DynamicUPIQRModal({
                 onClick={() => setActiveTab('qr')}
                 style={{
                   flex: 1,
+                  minHeight: 44,
                   padding: '8px 10px',
                   borderRadius: 'var(--radius-full)',
                   border: 'none',
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: 700,
                   cursor: 'pointer',
+                  touchAction: 'manipulation',
                   background: activeTab === 'qr' ? '#ffffff' : 'transparent',
                   color: activeTab === 'qr' ? 'var(--primary)' : '#64748b',
-                  boxShadow: activeTab === 'qr' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                  boxShadow: activeTab === 'qr' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                📱 Dynamic QR
+                📱 QR Code
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('intent')}
                 style={{
                   flex: 1,
+                  minHeight: 44,
                   padding: '8px 10px',
                   borderRadius: 'var(--radius-full)',
                   border: 'none',
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: 700,
                   cursor: 'pointer',
+                  touchAction: 'manipulation',
                   background: activeTab === 'intent' ? '#ffffff' : 'transparent',
                   color: activeTab === 'intent' ? 'var(--primary)' : '#64748b',
-                  boxShadow: activeTab === 'intent' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                  boxShadow: activeTab === 'intent' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                ⚡ UPI App Intent
+                ⚡ App Intent
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('collect')}
                 style={{
                   flex: 1,
+                  minHeight: 44,
                   padding: '8px 10px',
                   borderRadius: 'var(--radius-full)',
                   border: 'none',
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: 700,
                   cursor: 'pointer',
+                  touchAction: 'manipulation',
                   background: activeTab === 'collect' ? '#ffffff' : 'transparent',
                   color: activeTab === 'collect' ? 'var(--primary)' : '#64748b',
-                  boxShadow: activeTab === 'collect' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                  boxShadow: activeTab === 'collect' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                📥 Web Collect
+                📥 Collect
               </button>
             </div>
 
@@ -217,52 +223,118 @@ export default function DynamicUPIQRModal({
                   borderRadius: 14,
                   border: '2px solid #e2e8f0',
                   display: 'inline-block',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                  marginBottom: 12
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
                 }}>
                   <img
                     src={qrCodeUrl}
-                    alt="Scan to Pay NE Roots Pickles via UPI"
-                    style={{ width: 175, height: 175, display: 'block', margin: '0 auto' }}
+                    alt="Razorpay Dynamic UPI QR Code"
+                    style={{ width: 190, height: 190, display: 'block', margin: '0 auto' }}
                   />
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-dark)', fontWeight: 600, marginBottom: 8 }}>
-                  Scan with Google Pay, PhonePe, Paytm, or CRED
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
+                  Scan with any UPI App: <strong>GPay, PhonePe, Paytm, BHIM, CRED</strong>
                 </div>
               </div>
             )}
 
-            {/* TAB 2: UPI INTENT FLOW (MOBILE DIRECT APP SWITCH) */}
+            {/* TAB 2: 1-TAP UPI APP INTENT FLOW */}
             {activeTab === 'intent' && (
-              <div style={{ padding: '8px 0 16px' }}>
-                <a
-                  href={upiUri}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 10,
-                    background: 'var(--primary)',
-                    color: '#ffffff',
-                    padding: '14px 20px',
-                    borderRadius: 'var(--radius-full)',
-                    fontWeight: 700,
-                    fontSize: 15,
-                    textDecoration: 'none',
-                    boxShadow: '0 4px 14px rgba(217, 37, 37, 0.3)',
-                    marginBottom: 12
-                  }}
-                >
-                  <span>⚡ Pay ₹{amountRupees} via Installed UPI App</span>
-                </a>
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, margin: '0 0 12px' }}>
-                  Direct intent flow automatically opens Google Pay, PhonePe, Paytm, or CRED on your mobile device with pre-filled order details.
+              <div style={{ padding: '4px 0 12px' }}>
+                <p style={{ fontSize: 13, color: 'var(--text-dark)', marginBottom: 12 }}>
+                  Tap your preferred UPI app to open and complete payment:
                 </p>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 14, fontSize: 12, color: '#475569', fontWeight: 600 }}>
-                  <span>🟢 GPay</span>
-                  <span>🟣 PhonePe</span>
-                  <span>🔵 Paytm</span>
-                  <span>⚫ BHIM</span>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <a
+                    href={`gpay://upi/pay?pa=${vpa}&pn=${encodeURIComponent('NE Roots Pickles')}&am=${amountRupees}&cu=INR&tn=${encodeURIComponent(`Order #${orderId}`)}`}
+                    className="upi-app-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      color: '#1e293b',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                      minHeight: 48,
+                      touchAction: 'manipulation'
+                    }}
+                  >
+                    <span>🔵</span> Google Pay
+                  </a>
+
+                  <a
+                    href={`phonepe://pay?pa=${vpa}&pn=${encodeURIComponent('NE Roots Pickles')}&am=${amountRupees}&cu=INR&tn=${encodeURIComponent(`Order #${orderId}`)}`}
+                    className="upi-app-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      color: '#5f259f',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                      minHeight: 48,
+                      touchAction: 'manipulation'
+                    }}
+                  >
+                    <span>🟣</span> PhonePe
+                  </a>
+
+                  <a
+                    href={`paytmmp://pay?pa=${vpa}&pn=${encodeURIComponent('NE Roots Pickles')}&am=${amountRupees}&cu=INR&tn=${encodeURIComponent(`Order #${orderId}`)}`}
+                    className="upi-app-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      color: '#00baf2',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                      minHeight: 48,
+                      touchAction: 'manipulation'
+                    }}
+                  >
+                    <span>🔷</span> Paytm UPI
+                  </a>
+
+                  <a
+                    href={upiUri}
+                    className="upi-app-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      color: '#0f172a',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                      minHeight: 48,
+                      touchAction: 'manipulation'
+                    }}
+                  >
+                    <span>⚡</span> Other UPI Apps
+                  </a>
                 </div>
               </div>
             )}
@@ -278,15 +350,19 @@ export default function DynamicUPIQRModal({
                     <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                       <input
                         type="text"
+                        inputMode="email"
+                        autoCapitalize="none"
+                        autoComplete="off"
                         placeholder="e.g. mobile@paytm or user@oksbi"
                         value={customerUPI}
                         onChange={e => setCustomerUPI(e.target.value)}
                         style={{
                           flex: 1,
+                          minHeight: 46,
                           padding: '10px 12px',
                           borderRadius: 8,
                           border: '1px solid var(--border-color)',
-                          fontSize: 13
+                          fontSize: 14
                         }}
                         required
                       />
@@ -295,12 +371,14 @@ export default function DynamicUPIQRModal({
                         style={{
                           background: 'var(--primary)',
                           color: '#fff',
-                          padding: '10px 16px',
+                          padding: '10px 18px',
                           borderRadius: 8,
                           fontSize: 13,
                           fontWeight: 700,
                           border: 'none',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          minHeight: 46,
+                          touchAction: 'manipulation'
                         }}
                       >
                         Request
@@ -320,7 +398,7 @@ export default function DynamicUPIQRModal({
                     <button
                       type="button"
                       onClick={() => setCollectSent(false)}
-                      style={{ background: 'none', border: 'none', color: '#1d4ed8', fontSize: 11, textDecoration: 'underline', cursor: 'pointer' }}
+                      style={{ background: 'none', border: 'none', color: '#1d4ed8', fontSize: 12, textDecoration: 'underline', cursor: 'pointer', minHeight: 36 }}
                     >
                       Change UPI ID
                     </button>

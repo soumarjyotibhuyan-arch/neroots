@@ -521,22 +521,27 @@ export default function Checkout() {
                         placeholder="e.g. Priyanshu Borah"
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                        autoComplete="name"
+                        autoCapitalize="words"
+                        style={{ width: '100%', minHeight: 46, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 15 }}
                         required
                       />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div className="checkout-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
                       <div>
                         <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
                           Mobile Number <span style={{ color: 'red' }}>*</span>
                         </label>
                         <input
                           type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
                           placeholder="e.g. 9876543210"
+                          maxLength={10}
                           value={phone}
-                          onChange={e => setPhone(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                          onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
+                          style={{ width: '100%', minHeight: 46, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 15 }}
                           required
                         />
                       </div>
@@ -546,10 +551,12 @@ export default function Checkout() {
                         </label>
                         <input
                           type="email"
+                          inputMode="email"
+                          autoComplete="email"
                           placeholder="priyanshu@example.com"
                           value={email}
                           onChange={e => setEmail(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                          style={{ width: '100%', minHeight: 46, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 15 }}
                         />
                       </div>
                     </div>
@@ -563,12 +570,13 @@ export default function Checkout() {
                         placeholder="e.g. House No 42, Zoo Road Tiniali, RG Baruah Road"
                         value={address}
                         onChange={e => setAddress(e.target.value)}
-                        style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                        autoComplete="street-address"
+                        style={{ width: '100%', minHeight: 64, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 15 }}
                         required
                       />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div className="checkout-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
                       <div>
                         <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
                           City <span style={{ color: 'red' }}>*</span>
@@ -578,7 +586,8 @@ export default function Checkout() {
                           placeholder="e.g. Guwahati"
                           value={city}
                           onChange={e => setCity(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                          autoComplete="address-level2"
+                          style={{ width: '100%', minHeight: 46, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 15 }}
                           required
                         />
                       </div>
@@ -588,10 +597,14 @@ export default function Checkout() {
                         </label>
                         <input
                           type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={6}
                           placeholder="e.g. 781024"
                           value={pincode}
-                          onChange={e => setPincode(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                          onChange={e => setPincode(e.target.value.replace(/\D/g, ''))}
+                          autoComplete="postal-code"
+                          style={{ width: '100%', minHeight: 46, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 15 }}
                           required
                         />
                       </div>
@@ -606,7 +619,7 @@ export default function Checkout() {
                         placeholder="e.g. Fragile glass jars, leave with security"
                         value={notes}
                         onChange={e => setNotes(e.target.value)}
-                        style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                        style={{ width: '100%', minHeight: 46, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 15 }}
                       />
                     </div>
                   </div>
