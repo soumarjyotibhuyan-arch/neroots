@@ -168,6 +168,80 @@ export default function DynamicUPIQRModal({
     }
   };
 
+  // Reusable helper to trigger real secure Razorpay payment modal
+  const triggerRealRazorpayPayment = (method, extraPrefill = {}) => {
+    if (typeof window === 'undefined' || !window.Razorpay) {
+      alert('Payment Gateway SDK is not loaded. Please refresh the page.');
+      return;
+    }
+
+    setVerifying(true);
+    const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_TUGmfkaNXTUgvy';
+    const rzpOptions = {
+      key: rzpKey,
+      amount: Math.round(Number(amountRupees) * 100),
+      currency: 'INR',
+      name: 'NE Roots Pickles Assam',
+      description: `Order #${orderId} • Payment via ${method.toUpperCase()}`,
+      image: 'https://neroots.vercel.app/images/ner_logo_icon.jpg',
+      order_id: gatewayOrderId || undefined,
+      prefill: {
+        name: customerName || '',
+        email: customerEmail || '',
+        contact: customerPhone || '',
+        method: method,
+        ...extraPrefill
+      },
+      theme: {
+        color: '#e62b2b'
+      },
+      handler: async function (response) {
+        try {
+          const verifyRes = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              storeOrderId: orderId
+            })
+          });
+
+          const verifyData = await verifyRes.json();
+          if (verifyRes.ok && verifyData.success) {
+            onPaymentSuccess(verifyData.order);
+          } else {
+            alert(verifyData.error || 'Payment verification failed.');
+          }
+        } catch (err) {
+          console.error('Verify error:', err);
+          alert('Network error verifying payment.');
+        } finally {
+          setVerifying(false);
+        }
+      },
+      modal: {
+        ondismiss: function () {
+          setVerifying(false);
+        }
+      }
+    };
+
+    try {
+      const rzp = new window.Razorpay(rzpOptions);
+      rzp.on('payment.failed', function (response) {
+        setVerifying(false);
+        alert(`Payment failed: ${response.error?.description || 'Transaction declined'}`);
+      });
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      alert('Could not launch payment gateway.');
+      setVerifying(false);
+    }
+  };
+
   // 2. UPI ID COLLECT (RAZORPAY INTEGRATION + GATEWAY ROUTING)
   const handleUPICollect = async (e) => {
     if (e) e.preventDefault();
@@ -184,74 +258,7 @@ export default function DynamicUPIQRModal({
       return;
     }
 
-    setVerifying(true);
-
-    // If Razorpay SDK is available, trigger Razorpay Collect / Standard modal with prefilled VPA
-    if (typeof window !== 'undefined' && window.Razorpay) {
-      const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_TUGmfkaNXTUgvy';
-      const rzpOptions = {
-        key: rzpKey,
-        amount: Math.round(Number(amountRupees) * 100),
-        currency: 'INR',
-        name: 'NE Roots Pickles Assam',
-        description: `Order #${orderId} • UPI ID: ${cleanVPA}`,
-        image: 'https://neroots.vercel.app/images/ner_logo_icon.jpg',
-        order_id: gatewayOrderId || undefined,
-        prefill: {
-          name: customerName || '',
-          email: customerEmail || '',
-          contact: customerPhone || '',
-          vpa: cleanVPA
-        },
-        theme: {
-          color: '#e62b2b'
-        },
-        handler: async function (response) {
-          try {
-            const verifyRes = await fetch('/api/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                storeOrderId: orderId
-              })
-            });
-
-            const verifyData = await verifyRes.json();
-            if (verifyRes.ok && verifyData.success) {
-              onPaymentSuccess(verifyData.order);
-              return;
-            }
-          } catch (err) {
-            console.error('Verify error:', err);
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            setVerifying(false);
-          }
-        }
-      };
-
-      try {
-        const rzp = new window.Razorpay(rzpOptions);
-        rzp.on('payment.failed', function (response) {
-          setVerifying(false);
-          alert(`Payment failed: ${response.error?.description || 'Transaction declined'}`);
-        });
-        rzp.open();
-        setVerifying(false);
-        return;
-      } catch (err) {
-        console.warn('Razorpay popup open error, showing collect screen:', err);
-      }
-    }
-
-    // Direct gateway collect request notification
-    setCollectSent(true);
-    setVerifying(false);
+    triggerRealRazorpayPayment('upi', { vpa: cleanVPA });
   };
 
   // 3. CARD PAYMENT SUBMISSION
@@ -552,10 +559,15 @@ export default function DynamicUPIQRModal({
               <div style={{ textAlign: 'left' }}>
                 {!collectSent ? (
                   <form onSubmit={handleUPICollect} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {/* Compliance Warning for VPA Collect */}
+                    <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: '#b45309', lineHeight: 1.4 }}>
+                      <strong>⚠️ NPCI Regulation Notice:</strong> UPI ID collect requests are restricted by NPCI. If you do not receive a payment notification in your app, please use the <strong>📱 Apps (Intent)</strong> or <strong>📲 QR Code</strong> tabs above instead.
+                    </div>
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Enter Your UPI ID / VPA</span>
                       <span style={{ fontSize: 11, color: '#15803d', background: '#dcfce7', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
-                        ⚡ Zero-Friction Flow
+                        ⚡ Prefilled Gateway
                       </span>
                     </div>
 
@@ -833,300 +845,81 @@ export default function DynamicUPIQRModal({
 
             {/* TAB 3: CREDIT / DEBIT CARDS */}
             {activeTab === 'card' && (
-              <div style={{ textAlign: 'left' }}>
-                {!cardOtpStep ? (
-                  <form onSubmit={handleCardPay} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Enter Card Details</span>
-                      <button
-                        type="button"
-                        onClick={fillTestCard}
-                        style={{
-                          background: '#f8fafc',
-                          border: '1px solid #cbd5e1',
-                          padding: '3px 8px',
-                          borderRadius: 6,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: '#0369a1',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        ⚡ Fill Test Card
-                      </button>
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>
-                        CARD NUMBER
-                      </label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="4100 2800 0000 1007"
-                        maxLength={19}
-                        value={cardNumber}
-                        onChange={e => {
-                          const val = e.target.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
-                          setCardNumber(val);
-                        }}
-                        style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14 }}
-                        required
-                      />
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>
-                          VALID THRU
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="MM/YY (e.g. 12/26)"
-                          maxLength={5}
-                          value={cardExpiry}
-                          onChange={e => {
-                            let val = e.target.value.replace(/\D/g, '');
-                            if (val.length >= 2) val = val.slice(0, 2) + '/' + val.slice(2, 4);
-                            setCardExpiry(val);
-                          }}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14 }}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>
-                          CVV / CVC
-                        </label>
-                        <input
-                          type="password"
-                          inputMode="numeric"
-                          placeholder="123"
-                          maxLength={4}
-                          value={cardCvv}
-                          onChange={e => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14 }}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>
-                        CARDHOLDER NAME
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Name on card"
-                        value={cardHolder}
-                        onChange={e => setCardHolder(e.target.value)}
-                        style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14 }}
-                        required
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      style={{
-                        background: 'var(--primary)',
-                        color: '#fff',
-                        padding: '12px',
-                        borderRadius: 'var(--radius-full)',
-                        fontSize: 14,
-                        fontWeight: 700,
-                        border: 'none',
-                        cursor: 'pointer',
-                        marginTop: 6,
-                        boxShadow: '0 4px 12px rgba(217, 37, 37, 0.25)'
-                      }}
-                    >
-                      Pay ₹{amountRupees} via Card →
-                    </button>
-                  </form>
-                ) : (
-                  /* 3D Secure / Bank OTP Verification */
-                  <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #cbd5e1', textAlign: 'center' }}>
-                    <div style={{ fontSize: 24, marginBottom: 6 }}>🔒</div>
-                    <h4 style={{ fontSize: 15, margin: '0 0 6px', color: '#1e293b' }}>Bank 3D-Secure Verification</h4>
-                    <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 14px' }}>
-                      Enter OTP sent to your registered mobile number for card ending in <strong>{cardNumber.slice(-4) || '1007'}</strong>:
-                    </p>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="Enter OTP (Test: 1234)"
-                      value={cardOtp}
-                      onChange={e => setCardOtp(e.target.value)}
-                      maxLength={6}
-                      style={{
-                        width: 180,
-                        padding: '10px',
-                        fontSize: 18,
-                        fontWeight: 800,
-                        letterSpacing: 4,
-                        textAlign: 'center',
-                        borderRadius: 8,
-                        border: '2px solid var(--primary)',
-                        marginBottom: 14
-                      }}
-                    />
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <button
-                        type="button"
-                        onClick={() => setCardOtpStep(false)}
-                        style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', fontSize: 13, cursor: 'pointer' }}
-                      >
-                        ← Back
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleConfirmCardOtp}
-                        disabled={verifying}
-                        style={{
-                          flex: 1.5,
-                          padding: 10,
-                          borderRadius: 8,
-                          background: 'var(--primary)',
-                          color: '#fff',
-                          fontWeight: 700,
-                          fontSize: 13,
-                          border: 'none',
-                          cursor: verifying ? 'not-allowed' : 'pointer'
-                        }}
-                      >
-                        {verifying ? 'Authorizing...' : 'Submit OTP & Pay ✓'}
-                      </button>
-                    </div>
+              <div style={{ textAlign: 'left', padding: '8px 0 16px' }}>
+                <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 12, padding: '16px 18px', marginBottom: 18 }}>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>🔒 Secure Card Processing</span>
+                    <span style={{ fontSize: 10, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 4 }}>PCI-DSS COMPLIANT</span>
                   </div>
-                )}
+                  <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5, margin: 0 }}>
+                    We support all major Indian and international credit/debit cards including <strong>RuPay, Visa, Mastercard, and Maestro</strong>. 
+                    Your card credentials are encrypted and processed directly by Razorpay's bank-grade secure server.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => triggerRealRazorpayPayment('card')}
+                  disabled={verifying}
+                  style={{
+                    width: '100%',
+                    background: 'var(--primary)',
+                    color: '#fff',
+                    padding: '14px',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: verifying ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 14px rgba(230, 43, 43, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8
+                  }}
+                >
+                  {verifying ? 'Connecting Gateway...' : `💳 Pay ₹${amountRupees} securely via Card →`}
+                </button>
               </div>
             )}
 
             {/* TAB 4: NET BANKING / E-BANKING */}
             {activeTab === 'netbanking' && (
-              <div style={{ textAlign: 'left' }}>
-                {!bankOtpStep ? (
-                  <form onSubmit={handleNetBankingPay} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Select Your Bank</span>
-
-                    {/* Popular Banks Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-                      {POPULAR_BANKS.map(bank => (
-                        <button
-                          key={bank.id}
-                          type="button"
-                          onClick={() => setSelectedBank(bank.id)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '10px 12px',
-                            borderRadius: 8,
-                            border: selectedBank === bank.id ? '2px solid var(--primary)' : '1px solid #cbd5e1',
-                            background: selectedBank === bank.id ? '#fff5f5' : '#ffffff',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            fontSize: 12,
-                            fontWeight: selectedBank === bank.id ? 700 : 500
-                          }}
-                        >
-                          <span>{bank.icon}</span>
-                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bank.name}</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* All Banks Dropdown */}
-                    <div>
-                      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>
-                        OR SELECT OTHER INDIAN BANK
-                      </label>
-                      <select
-                        value={selectedBank}
-                        onChange={e => setSelectedBank(e.target.value)}
-                        style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
-                      >
-                        {ALL_BANKS.map(b => (
-                          <option key={b.id} value={b.id}>{b.name} ({b.code})</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <button
-                      type="submit"
-                      style={{
-                        background: 'var(--primary)',
-                        color: '#fff',
-                        padding: '12px',
-                        borderRadius: 'var(--radius-full)',
-                        fontSize: 14,
-                        fontWeight: 700,
-                        border: 'none',
-                        cursor: 'pointer',
-                        marginTop: 4,
-                        boxShadow: '0 4px 12px rgba(217, 37, 37, 0.25)'
-                      }}
-                    >
-                      Continue to Bank Portal →
-                    </button>
-                  </form>
-                ) : (
-                  /* Bank Portal Simulation */
-                  <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #cbd5e1', textAlign: 'center' }}>
-                    <div style={{ fontSize: 24, marginBottom: 4 }}>🏛️</div>
-                    <h4 style={{ fontSize: 15, margin: '0 0 6px', color: '#1e293b' }}>
-                      {ALL_BANKS.find(b => b.id === selectedBank)?.name} Net Banking
-                    </h4>
-                    <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
-                      Authenticate to authorize transfer of <strong>₹{amountRupees}</strong> to NE Roots:
-                    </p>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14, textAlign: 'left' }}>
-                      <input
-                        type="text"
-                        placeholder="User ID / Customer ID (e.g. testuser)"
-                        value={bankUserId}
-                        onChange={e => setBankUserId(e.target.value)}
-                        style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13 }}
-                      />
-                      <input
-                        type="password"
-                        placeholder="Password / IPIN (e.g. ••••••)"
-                        value={bankPassword}
-                        onChange={e => setBankPassword(e.target.value)}
-                        style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13 }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <button
-                        type="button"
-                        onClick={() => setBankOtpStep(false)}
-                        style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', fontSize: 13, cursor: 'pointer' }}
-                      >
-                        ← Back
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleConfirmBankLogin}
-                        disabled={verifying}
-                        style={{
-                          flex: 1.5,
-                          padding: 10,
-                          borderRadius: 8,
-                          background: 'var(--primary)',
-                          color: '#fff',
-                          fontWeight: 700,
-                          fontSize: 13,
-                          border: 'none',
-                          cursor: verifying ? 'not-allowed' : 'pointer'
-                        }}
-                      >
-                        {verifying ? 'Connecting to Bank...' : 'Authorize & Pay ✓'}
-                      </button>
-                    </div>
+              <div style={{ textAlign: 'left', padding: '8px 0 16px' }}>
+                <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 12, padding: '16px 18px', marginBottom: 18 }}>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>🏛️ Secure NetBanking</span>
+                    <span style={{ fontSize: 10, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 4 }}>ENCRYPTED ROUTING</span>
                   </div>
-                )}
+                  <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.5, margin: 0 }}>
+                    Access netbanking portals for over 50+ major Indian banks, including <strong>SBI, HDFC, ICICI, Axis, and Kotak</strong>. 
+                    Your authentication is completed securely on your bank's official portal.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => triggerRealRazorpayPayment('netbanking')}
+                  disabled={verifying}
+                  style={{
+                    width: '100%',
+                    background: 'var(--primary)',
+                    color: '#fff',
+                    padding: '14px',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: verifying ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 14px rgba(230, 43, 43, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8
+                  }}
+                >
+                  {verifying ? 'Connecting Gateway...' : `🏛️ Pay ₹${amountRupees} securely via NetBanking →`}
+                </button>
               </div>
             )}
 

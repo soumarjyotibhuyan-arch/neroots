@@ -998,6 +998,29 @@ export default function Admin() {
               </div>
             )}
 
+            <button
+              onClick={handleForceCloudSync}
+              disabled={isSyncingCloud}
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#ffffff',
+                border: 'none',
+                padding: '8px 18px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
+                transition: 'all 0.2s ease',
+                opacity: isSyncingCloud ? 0.7 : 1
+              }}
+            >
+              {isSyncingCloud ? '🔄 Committing...' : '🚀 Confirm Changes'}
+            </button>
+
             <Link
               href="/"
               style={{
@@ -1348,19 +1371,14 @@ export default function Admin() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Select Product Photo</label>
-                <select
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Product Photo Path / URL</label>
+                <input
+                  type="text"
+                  placeholder="e.g. /images/bhut_jolokia_pickle.jpg or custom URL"
                   value={image}
                   onChange={e => setImage(e.target.value)}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
-                >
-                  <option value="/images/mango_pickle.jpg">Artisanal Mango Pickle Jar</option>
-                  <option value="/images/red_chilli_pickle.jpg">Banarasi Stuffed Red Chilli Jar</option>
-                  <option value="/images/garlic_pickle.jpg">Whole Garlic Pickle Jar</option>
-                  <option value="/images/sweet_lemon_pickle.jpg">Sweet &amp; Tangy Lemon Jar</option>
-                  <option value="/images/bhut_jolokia_pickle.jpg">Fiery Ghost Pepper Jar</option>
-                  <option value="/images/avakaya_pickle.jpg">Andhra Avakaya Martaban Jar</option>
-                </select>
+                />
               </div>
 
               <div>
@@ -1514,15 +1532,14 @@ export default function Admin() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Profile Image</label>
-                  <select
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Profile Image Path / URL</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. /images/ner_logo_icon.jpg or custom URL"
                     value={memberImage}
                     onChange={e => setMemberImage(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14, background: '#fff' }}
-                  >
-                    <option value="/images/ner_logo_icon.jpg">NE Roots Brand Emblem</option>
-                    <option value="/images/ne_roots_logo.jpg">NE Roots Tree Logo</option>
-                  </select>
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                  />
                 </div>
 
                 <div>
@@ -2073,19 +2090,14 @@ export default function Admin() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Select Product Image</label>
-                  <select
-                    value={editingProduct.image || '/images/bhut_jolokia_pickle.jpg'}
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Product Image Path / URL</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. /images/bhut_jolokia_pickle.jpg or custom URL"
+                    value={editingProduct.image || ''}
                     onChange={e => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14, background: '#fff' }}
-                  >
-                    <option value="/images/bhut_jolokia_pickle.jpg">NE Roots Bhut Jolokia &amp; Khorisa Labeled Jar</option>
-                    <option value="/images/kazi_nemu_pickle.jpg">NE Roots Assam Nemu Lime Labeled Jar</option>
-                    <option value="/images/dalle_khursani_pickle.jpg">NE Roots Sikkim Dalle Khursani Labeled Jar</option>
-                    <option value="/images/garlic_pickle.jpg">NE Roots Wild Hill Garlic Labeled Jar</option>
-                    <option value="/images/mango_pickle.jpg">NE Roots Sun-Cured Mango Labeled Jar</option>
-                    <option value="/images/red_chilli_pickle.jpg">NE Roots Banarasi Red Chilli Labeled Jar</option>
-                  </select>
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                  />
                 </div>
 
                 <div>
@@ -2208,15 +2220,14 @@ export default function Admin() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Profile Image</label>
-                  <select
-                    value={editingTeamMember.image || '/images/ner_logo_icon.jpg'}
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Profile Image Path / URL</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. /images/ner_logo_icon.jpg or custom URL"
+                    value={editingTeamMember.image || ''}
                     onChange={e => setEditingTeamMember({ ...editingTeamMember, image: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14, background: '#fff' }}
-                  >
-                    <option value="/images/ner_logo_icon.jpg">NE Roots Brand Emblem</option>
-                    <option value="/images/ne_roots_logo.jpg">NE Roots Tree Logo</option>
-                  </select>
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
+                  />
                 </div>
 
                 <div>

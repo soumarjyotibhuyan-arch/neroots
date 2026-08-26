@@ -6,7 +6,7 @@ import UserMenu from '../components/UserMenu';
 import GoogleSignInBtn from '../components/GoogleSignInBtn';
 
 export default function Reviews() {
-  const { cart, cartCount, cartSubtotal, isCartOpen, setIsCartOpen, removeFromCart, showToast } = useStore();
+  const { user, cart, cartCount, cartSubtotal, isCartOpen, setIsCartOpen, removeFromCart, showToast } = useStore();
 
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,6 +86,13 @@ export default function Reviews() {
     }
   };
 
+  // Initialize author input once Google user details load
+  useEffect(() => {
+    if (isModalOpen && user && user.name && !author) {
+      setAuthor(user.name);
+    }
+  }, [isModalOpen, user]);
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!author.trim() || !comment.trim() || !flavour) {
@@ -132,20 +139,21 @@ export default function Reviews() {
   };
 
   // Filter reviews
-  const filteredReviews = reviews.filter(r => {
-    const matchFlavour = selectedFlavour === 'All' || r.flavour?.toLowerCase().includes(selectedFlavour.toLowerCase());
-    const matchRating = selectedRating === 'All' || Number(r.rating) === Number(selectedRating);
+  const filteredReviews = (reviews || []).filter(r => {
+    if (!r) return false;
+    const matchFlavour = selectedFlavour === 'All' || (r.flavour && r.flavour.toLowerCase().includes(selectedFlavour.toLowerCase()));
+    const matchRating = selectedRating === 'All' || Number(r.rating || 5) === Number(selectedRating);
     return matchFlavour && matchRating;
   });
 
-  const totalReviews = reviews.length;
+  const totalReviews = (reviews || []).filter(Boolean).length;
   const avgRating = totalReviews > 0
-    ? (reviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / totalReviews).toFixed(2)
+    ? ((reviews || []).reduce((sum, r) => sum + Number((r && r.rating) || 5), 0) / totalReviews).toFixed(2)
     : '0.0';
 
-  const fiveStarCount = reviews.filter(r => Number(r.rating) === 5).length;
-  const fourStarCount = reviews.filter(r => Number(r.rating) === 4).length;
-  const threeStarCount = reviews.filter(r => Number(r.rating) <= 3).length;
+  const fiveStarCount = (reviews || []).filter(r => r && Number(r.rating) === 5).length;
+  const fourStarCount = (reviews || []).filter(r => r && Number(r.rating) === 4).length;
+  const threeStarCount = (reviews || []).filter(r => r && Number(r.rating) <= 3).length;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-cream)' }}>
@@ -216,6 +224,9 @@ export default function Reviews() {
               </Link>
               <Link href="/reviews" className="desktop-nav-link" style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', padding: '8px 12px' }}>
                 ⭐ Reviews
+              </Link>
+              <Link href="/track" className="desktop-nav-link" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', padding: '8px 12px' }}>
+                📦 Track Order
               </Link>
 
               {/* Google User Identity Menu */}
@@ -404,7 +415,8 @@ export default function Reviews() {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                     <div style={{ color: '#e62b2b', fontSize: 16, letterSpacing: 2 }}>
-                      {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}
+                      {'★'.repeat(Math.max(0, Math.min(5, Math.round(Number(rev.rating) || 5))))}
+                      {'☆'.repeat(5 - Math.max(0, Math.min(5, Math.round(Number(rev.rating) || 5))))}
                     </div>
                     {rev.verifiedPurchase && (
                       <span style={{ fontSize: 11, fontWeight: 700, color: '#008738', background: '#eaf7ee', padding: '2px 8px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -545,7 +557,7 @@ export default function Reviews() {
                   <input
                     type="text"
                     placeholder="e.g. Manas Pratim"
-                    value={author || (user?.name || '')}
+                    value={author}
                     onChange={e => setAuthor(e.target.value)}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
                     required
@@ -631,6 +643,7 @@ export default function Reviews() {
                 <li><Link href="/">Our Pickle Catalog</Link></li>
                 <li><Link href="/team">About Our Team &amp; Heritage</Link></li>
                 <li><Link href="/reviews">Customer Reviews</Link></li>
+                <li><Link href="/track">Track My Order</Link></li>
                 <li><Link href="/checkout">Express Checkout</Link></li>
                 <li><Link href="/admin">Google Admin Portal</Link></li>
               </ul>

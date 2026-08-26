@@ -29,11 +29,11 @@ export default function MobileNav() {
         </Link>
 
         <Link
-          href="/team"
-          className={`mobile-nav-tab ${currentPath === '/team' ? 'active' : ''}`}
+          href="/track"
+          className={`mobile-nav-tab ${currentPath === '/track' ? 'active' : ''}`}
         >
-          <span className="mobile-nav-icon">👥</span>
-          <span className="mobile-nav-label">Team</span>
+          <span className="mobile-nav-icon">📦</span>
+          <span className="mobile-nav-label">Track</span>
         </Link>
 
         <Link

@@ -129,6 +129,9 @@ export default function Team() {
               <Link href="/reviews" className="desktop-nav-link" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', padding: '8px 12px' }}>
                 ⭐ Reviews
               </Link>
+              <Link href="/track" className="desktop-nav-link" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', padding: '8px 12px' }}>
+                📦 Track Order
+              </Link>
 
               {/* Google User Identity Menu */}
               <UserMenu />
@@ -401,6 +404,7 @@ export default function Team() {
                 <li><Link href="/">Our Pickle Catalog</Link></li>
                 <li><Link href="/team">About Our Team &amp; Heritage</Link></li>
                 <li><Link href="/reviews">Customer Reviews</Link></li>
+                <li><Link href="/track">Track My Order</Link></li>
                 <li><Link href="/checkout">Express Checkout</Link></li>
                 <li><Link href="/admin">Google Admin Portal</Link></li>
               </ul>

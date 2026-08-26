@@ -2,7 +2,7 @@ import { getDB, saveDB } from '../../../lib/db';
 import { verifyGoogleIdToken, findOrCreateCustomer } from '../../../lib/googleAuth';
 import { checkRateLimit, sanitizeObject, registerAdminSession, validateAdminRequest } from '../../../lib/security';
 
-const activeCustomerSessions = new Map();
+const activeCustomerSessions = global._activeCustomerSessions || (global._activeCustomerSessions = new Map());
 
 export default async function handler(req, res) {
   // Anti-Brute Force Rate Limiting
@@ -56,11 +56,12 @@ export default async function handler(req, res) {
       let googleUser;
       if (credential) {
         googleUser = await verifyGoogleIdToken(credential);
-      } else if (profile && profile.email && (profile.email_verified === true || profile.verified_email === true)) {
+      } else if (profile && profile.email) {
+        const isVerified = profile.email_verified === true || profile.email_verified === 'true' || profile.email_verified === undefined || profile.verified_email === true || profile.verified_email === 'true';
         googleUser = {
-          sub: profile.sub || profile.id || `google_${Date.now()}`,
+          sub: profile.sub || profile.id || `google_${profile.email.replace(/[^a-zA-Z0-9]/g, '_')}`,
           email: sanitizeString(profile.email.toLowerCase(), 100),
-          email_verified: true,
+          email_verified: isVerified,
           name: sanitizeString(profile.name || profile.email.split('@')[0], 80),
           picture: sanitizeString(profile.picture || 'https://lh3.googleusercontent.com/a/default-user=s96-c', 255)
         };

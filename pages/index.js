@@ -265,6 +265,19 @@ export default function Home() {
                 ⭐ Reviews
               </Link>
 
+              <Link
+                href="/track"
+                className="desktop-nav-link"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: 'var(--text-dark)',
+                  padding: '8px 12px'
+                }}
+              >
+                📦 Track Order
+              </Link>
+
               {/* Google User Identity Menu */}
               <UserMenu />
 
@@ -520,9 +533,9 @@ export default function Home() {
               <ul className="footer-links">
                 <li><Link href="/team">About Our Team &amp; Assam Roots</Link></li>
                 <li><Link href="/reviews">Customer Reviews &amp; Ratings</Link></li>
+                <li><Link href="/track">📦 Track My Order</Link></li>
                 <li><a href="#fiery">Assam Bhut Jolokia &amp; Khorisa</a></li>
                 <li><a href="#kazi-nemu">Assam Nemu King Lime</a></li>
-                <li><a href="#dalle">Sikkim Dalle Khursani</a></li>
               </ul>
             </div>
 
