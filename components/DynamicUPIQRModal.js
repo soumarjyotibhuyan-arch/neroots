@@ -188,7 +188,7 @@ export default function DynamicUPIQRModal({
 
     // If Razorpay SDK is available, trigger Razorpay Collect / Standard modal with prefilled VPA
     if (typeof window !== 'undefined' && window.Razorpay) {
-      const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TUEl7SyeNdN6Rx';
+      const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_TUGmfkaNXTUgvy';
       const rzpOptions = {
         key: rzpKey,
         amount: Math.round(Number(amountRupees) * 100),

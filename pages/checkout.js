@@ -179,7 +179,7 @@ export default function Checkout() {
       });
 
       if (isLoaded && typeof window !== 'undefined' && window.Razorpay) {
-        const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || orderData.key_id || orderData.keyId || 'rzp_test_TUEl7SyeNdN6Rx';
+        const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || orderData.key_id || orderData.keyId || 'rzp_live_TUGmfkaNXTUgvy';
         const rzpOptions = {
           key: rzpKey,
           amount: orderData.amount,
@@ -683,13 +683,13 @@ export default function Checkout() {
                           Google Pay, PhonePe, Paytm, Any UPI ID, Cards (Visa/Mastercard/RuPay), &amp; 50+ Banks via official Razorpay modal.
                         </div>
 
-                        {/* Razorpay Test Sandbox Guidance Box */}
+                        {/* Razorpay Live Mode Info Box */}
                         <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8, padding: '10px 12px', fontSize: 12 }}>
-                          <div style={{ fontWeight: 700, color: '#1e40af', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <span>🧪</span> Razorpay Test Mode Active ({process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TUEl7SyeNdN6Rx'})
+                          <div style={{ fontWeight: 700, color: '#15803d', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span>🔒</span> 256-Bit SSL Encrypted Live Checkout (Razorpay)
                           </div>
                           <div style={{ color: '#475569', lineHeight: 1.4 }}>
-                            Click <strong>Place Order &amp; Pay</strong> below to trigger Razorpay's official checkout window. In the popup, choose <strong>Card</strong> (<code>4100 2800 0000 1007</code>, <code>12/26</code>, <code>123</code>) or <strong>UPI</strong> (<code>success@razorpay</code>), and click <strong>Success</strong>.
+                            Click <strong>Place Order &amp; Pay</strong> below to securely complete your payment with Google Pay, PhonePe, Paytm, Any UPI ID, Cards or Net Banking.
                           </div>
                         </div>
                       </div>
