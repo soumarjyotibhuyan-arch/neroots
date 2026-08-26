@@ -231,7 +231,7 @@ export default function App({ Component, pageProps }) {
     >
       <Head>
         <title>NE Roots | Authentic North Eastern Pickles • Handcrafted in Assam</title>
-        <meta name="description" content="Artisanal North Eastern pickles made with cold-pressed mustard oil, Bhut Jolokia ghost peppers, Kazi Nemu lemons, and fermented bamboo shoot." />
+        <meta name="description" content="Artisanal North Eastern pickles made with cold-pressed mustard oil, Bhut Jolokia ghost peppers, Nemu lemons, and fermented bamboo shoot." />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
         <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </Head>

@@ -153,7 +153,7 @@ export default function Home() {
           "@type": "ContactPoint",
           "telephone": "+91-70026-69032",
           "contactType": "customer service",
-          "email": "contact@neroots.in",
+          "email": "soumarjyotibhuyan@gmail.com",
           "areaServed": "IN",
           "availableLanguage": ["English", "Assamese", "Hindi"]
         }
@@ -179,15 +179,15 @@ export default function Home() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head>
         <title>NE Roots | Authentic North Eastern Pickles • Handcrafted in Assam</title>
-        <meta name="description" content="NE Roots (North East Roots) is an artisanal FMCG brand rooted in Assam, bringing authentic flavours of Bhut Jolokia ghost peppers, GI-tagged Assam Kazi Nemu lemons, and fermented bamboo shoot (khorisa) pickles to your table." />
-        <meta name="keywords" content="NE Roots, North East Roots, Assam Pickles, Bhut Jolokia, Ghost Pepper Pickle, Kazi Nemu, Dalle Khursani, Khorisa, Assam Achaar, Handcrafted Indian Pickles, FSSAI 20326101000625" />
+        <meta name="description" content="NE Roots (North East Roots) is an artisanal FMCG brand rooted in Assam, bringing authentic flavours of Bhut Jolokia ghost peppers, GI-tagged Assam Nemu lemons, and fermented bamboo shoot (khorisa) pickles to your table." />
+        <meta name="keywords" content="NE Roots, North East Roots, Assam Pickles, Bhut Jolokia, Ghost Pepper Pickle, Nemu, Dalle Khursani, Khorisa, Assam Achaar, Handcrafted Indian Pickles, FSSAI 20326101000625" />
         <link rel="canonical" href="https://neroots.in/" />
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://neroots.in/" />
         <meta property="og:title" content="NE Roots | Authentic North Eastern Pickles Handcrafted in Assam" />
-        <meta property="og:description" content="Celebrate the bold, soulful flavours of North East India. Handcrafted pickles with GI-tagged Kazi Nemu lemons, Bhut Jolokia, and bamboo shoots." />
+        <meta property="og:description" content="Celebrate the bold, soulful flavours of North East India. Handcrafted pickles with GI-tagged Nemu lemons, Bhut Jolokia, and bamboo shoots." />
         <meta property="og:image" content="https://neroots.in/images/hero_banner.jpg" />
         <meta property="og:site_name" content="NE Roots" />
         <meta property="og:locale" content="en_IN" />
@@ -195,7 +195,7 @@ export default function Home() {
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="NE Roots | Artisanal North Eastern Pickles" />
-        <meta name="twitter:description" content="Authentic Assam Bhut Jolokia, Kazi Nemu, and Dalle Khursani pickles from Assam to your doorstep." />
+        <meta name="twitter:description" content="Authentic Assam Bhut Jolokia, Nemu, and Dalle Khursani pickles from Assam to your doorstep." />
         <meta name="twitter:image" content="https://neroots.in/images/hero_banner.jpg" />
 
         {/* JSON-LD Structured Data for SEO */}
@@ -281,7 +281,7 @@ export default function Home() {
               <span className="search-icon">🔍</span>
               <input
                 type="text"
-                placeholder="Search Bhut Jolokia, Kazi Nemu, Dalle..."
+                placeholder="Search Bhut Jolokia, Nemu, Dalle..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="nav-search-input"
@@ -513,7 +513,7 @@ export default function Home() {
                 <li><Link href="/team">About Our Team &amp; Assam Roots</Link></li>
                 <li><Link href="/reviews">Customer Reviews &amp; Ratings</Link></li>
                 <li><a href="#fiery">Assam Bhut Jolokia &amp; Khorisa</a></li>
-                <li><a href="#kazi-nemu">Assam Kazi Nemu King Lime</a></li>
+                <li><a href="#kazi-nemu">Assam Nemu King Lime</a></li>
                 <li><a href="#dalle">Sikkim Dalle Khursani</a></li>
               </ul>
             </div>
@@ -533,7 +533,7 @@ export default function Home() {
               <h4>Grievance &amp; Contact</h4>
               <div style={{ fontSize: 13, lineHeight: 1.6, color: '#f7dede' }}>
                 <p><strong>Resident Grievance Officer:</strong><br />Mr. Soumarjyoti Bhuyan</p>
-                <p style={{ marginTop: 6 }}>📧 <strong>Email:</strong> grievance@neroots.in</p>
+                <p style={{ marginTop: 6 }}>📧 <strong>Email:</strong> soumarjyotibhuyan@gmail.com</p>
                 <p>📞 <strong>Helpline:</strong> +91 70026 69032</p>
                 <p style={{ marginTop: 6, fontSize: 12, color: '#ffd147' }}>
                   ⏳ 48-Hour Statutory Acknowledgment • 30-Day Resolution SLA

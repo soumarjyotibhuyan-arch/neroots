@@ -48,7 +48,7 @@ export default function Terms() {
                 <li><strong>Brand Name:</strong> NE Roots (North East Roots)</li>
                 <li><strong>FSSAI Registration / License No:</strong> 20326101000625</li>
                 <li><strong>Registered Kitchen Address:</strong> G.S. Road, Guwahati, Kamrup Metropolitan, Assam - 781001, India</li>
-                <li><strong>Customer Support Email:</strong> contact@neroots.in</li>
+                <li><strong>Customer Support Email:</strong> soumarjyotibhuyan@gmail.com</li>
                 <li><strong>Consumer Helpline:</strong> +91 70026 69032</li>
               </ul>
             </div>
@@ -70,7 +70,7 @@ export default function Terms() {
             <div>
               <h2 style={{ fontSize: 20, marginBottom: 8 }}>4. Food Safety &amp; Quality Guarantee</h2>
               <p>
-                Our pickles are prepared under strict hygienic conditions conforming to FSSAI standards using pure cold-pressed mustard oil, GI-tagged Assamese lemons (Kazi Nemu), King Chilli (Bhut Jolokia), and natural spices without artificial chemical preservatives or synthetic dyes.
+                Our pickles are prepared under strict hygienic conditions conforming to FSSAI standards using pure cold-pressed mustard oil, GI-tagged Assamese lemons (Nemu), King Chilli (Bhut Jolokia), and natural spices without artificial chemical preservatives or synthetic dyes.
               </p>
             </div>
 

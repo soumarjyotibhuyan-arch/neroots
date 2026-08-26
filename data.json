@@ -34,7 +34,7 @@
     {
       "id": 2,
       "name": "NE Roots Assam Nemu (Lime) & Mustard Oil Pickle",
-      "shortName": "Assam Kazi Nemu Lime",
+      "shortName": "Assam Nemu Lime",
       "category": "Tangy & Aromatic",
       "price": 249,
       "prices": {
@@ -205,7 +205,7 @@
       "cart": [
         {
           "id": 2,
-          "name": "Assam Kazi Nemu Lime",
+          "name": "Assam Nemu Lime",
           "weight": "250g",
           "price": 249,
           "quantity": 3,
@@ -232,7 +232,7 @@
       "cart": [
         {
           "id": 2,
-          "name": "Kazi Nemu Lemon Pickle",
+          "name": "Nemu Lemon Pickle",
           "weight": "250g",
           "price": 249,
           "quantity": 1,
@@ -297,7 +297,7 @@
         },
         {
           "id": 2,
-          "name": "NE Roots Assam Kazi Nemu Lime Pickle",
+          "name": "NE Roots Assam Nemu Lime Pickle",
           "weight": "250g",
           "price": 249,
           "quantity": 1,
@@ -338,7 +338,7 @@
       "author": "Nilav Jyoti",
       "location": "Jorhat, Assam",
       "rating": 5,
-      "flavour": "Assam Kazi Nemu King Lime Pickle",
+      "flavour": "Assam Nemu King Lime Pickle",
       "title": "Incredible fresh aroma!",
       "comment": "Tastes just like my home made pickle!",
       "date": "2026-08-25",
@@ -360,9 +360,9 @@
       "author": "Dr. Malavika Saikia",
       "location": "Bengaluru, Karnataka",
       "rating": 5,
-      "flavour": "Assam Kazi Nemu King Lime Pickle",
-      "title": "Best Kazi Nemu pickle in India! That floral citrus aroma is heavenly",
-      "comment": "I live away from Assam and missed Kazi Nemu terribly. The moment I opened the jar, the fragrance filled my kitchen. The mustard seed paste and soft peel are pure perfection. Delivered in 3 days safely!",
+      "flavour": "Assam Nemu King Lime Pickle",
+      "title": "Best Nemu pickle in India! That floral citrus aroma is heavenly",
+      "comment": "I live away from Assam and missed Nemu terribly. The moment I opened the jar, the fragrance filled my kitchen. The mustard seed paste and soft peel are pure perfection. Delivered in 3 days safely!",
       "date": "2026-08-20",
       "verifiedPurchase": true
     },
@@ -423,7 +423,7 @@
       "id": 3,
       "name": "Rupjyoti Kalita",
       "role": "Head of Farmer Partnerships & Sourcing",
-      "bio": "Directly partnering with smallholder farming clusters in Tezpur and Golaghat for fresh Bhut Jolokia, organic Kazi Nemu lemons, and wild mountain garlic, ensuring fair trade and zero middlemen.",
+      "bio": "Directly partnering with smallholder farming clusters in Tezpur and Golaghat for fresh Bhut Jolokia, organic Nemu lemons, and wild mountain garlic, ensuring fair trade and zero middlemen.",
       "image": "/images/ner_logo_icon.jpg",
       "location": "Tezpur, Assam",
       "speciality": "Direct Farmer Sourcing & Sustainable Agriculture"

@@ -56,7 +56,7 @@ export default function RefundPolicy() {
               <h2 style={{ fontSize: 20, marginBottom: 8 }}>2. How to Claim a Replacement or Refund</h2>
               <ol style={{ paddingLeft: 20, marginTop: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <li>Take a clear photo/video of the damaged jar or packaging box.</li>
-                <li>WhatsApp us at <strong>+91 70026 69032</strong> or email <strong>orders@neroots.in</strong> with your Order ID (e.g. #NER-2041).</li>
+                <li>WhatsApp us at <strong>+91 70026 69032</strong> or email <strong>soumarjyotibhuyan@gmail.com</strong> with your Order ID (e.g. #NER-2041).</li>
                 <li>Our team will acknowledge your claim within <strong>24 hours</strong> and initiate resolution.</li>
               </ol>
             </div>

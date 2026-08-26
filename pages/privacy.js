@@ -62,7 +62,7 @@ export default function Privacy() {
             <div>
               <h2 style={{ fontSize: 20, marginBottom: 8 }}>4. Consumer Rights (Data Access, Correction &amp; Erasure)</h2>
               <p>
-                Under the DPDP Act, you have the right to request a copy of your stored order information, demand rectification of inaccuracies, or request permanent deletion of your customer record by emailing our Data Grievance Officer at <strong>privacy@neroots.in</strong>.
+                Under the DPDP Act, you have the right to request a copy of your stored order information, demand rectification of inaccuracies, or request permanent deletion of your customer record by emailing our Data Grievance Officer at <strong>soumarjyotibhuyan@gmail.com</strong>.
               </p>
             </div>
           </section>

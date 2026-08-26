@@ -292,7 +292,7 @@ export default function Team() {
         }}>
           <h2 style={{ fontSize: 26, margin: '0 0 10px 0', color: '#ffffff' }}>Taste the Passion in Every Jar</h2>
           <p style={{ fontSize: 15, maxWidth: 600, margin: '0 auto 24px auto', opacity: 0.95 }}>
-            Discover our curated range of authentic Assam Bhut Jolokia, GI-tagged Kazi Nemu, and Himalayan Dalle Khursani pickles.
+            Discover our curated range of authentic Assam Bhut Jolokia, GI-tagged Nemu, and Himalayan Dalle Khursani pickles.
           </p>
           <Link
             href="/"
@@ -411,7 +411,7 @@ export default function Team() {
               <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>
                 📍 R.G. Baruah Road, Guwahati, Assam - 781024<br />
                 📞 +91 94350 12345 / +91 88110 54321<br />
-                ✉️ care@neroots.in
+                ✉️ soumarjyotibhuyan@gmail.com
               </p>
             </div>
           </div>

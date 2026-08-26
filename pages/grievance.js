@@ -59,7 +59,7 @@ export default function Grievance() {
               </div>
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: 12, textTransform: 'uppercase' }}>Official Grievance Email</span>
-                <a href="mailto:grievance@neroots.in" style={{ color: 'var(--primary)', fontWeight: 700 }}>grievance@neroots.in</a>
+                <a href="mailto:soumarjyotibhuyan@gmail.com" style={{ color: 'var(--primary)', fontWeight: 700 }}>soumarjyotibhuyan@gmail.com</a>
               </div>
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: 12, textTransform: 'uppercase' }}>Consumer Helpline</span>

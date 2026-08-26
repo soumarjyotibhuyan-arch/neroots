@@ -1508,7 +1508,7 @@ export default function Admin() {
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Core Focus / Speciality</label>
                     <input
                       type="text"
-                      placeholder="e.g. Sun-Curing &amp; Kazi Nemu Preservation"
+                      placeholder="e.g. Sun-Curing &amp; Nemu Preservation"
                       value={memberSpeciality}
                       onChange={e => setMemberSpeciality(e.target.value)}
                       style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14 }}
@@ -2083,7 +2083,7 @@ export default function Admin() {
                     style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: 14, background: '#fff' }}
                   >
                     <option value="/images/bhut_jolokia_pickle.jpg">NE Roots Bhut Jolokia &amp; Khorisa Labeled Jar</option>
-                    <option value="/images/kazi_nemu_pickle.jpg">NE Roots Assam Kazi Nemu Lime Labeled Jar</option>
+                    <option value="/images/kazi_nemu_pickle.jpg">NE Roots Assam Nemu Lime Labeled Jar</option>
                     <option value="/images/dalle_khursani_pickle.jpg">NE Roots Sikkim Dalle Khursani Labeled Jar</option>
                     <option value="/images/garlic_pickle.jpg">NE Roots Wild Hill Garlic Labeled Jar</option>
                     <option value="/images/mango_pickle.jpg">NE Roots Sun-Cured Mango Labeled Jar</option>

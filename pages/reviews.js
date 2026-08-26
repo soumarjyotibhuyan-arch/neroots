@@ -25,7 +25,7 @@ export default function Reviews() {
 
   const FLAVOUR_OPTIONS = [
     'NE Roots Assam Bhut Jolokia & Bamboo Shoot Pickle',
-    'NE Roots Assam Kazi Nemu King Lime Pickle',
+    'NE Roots Assam Nemu King Lime Pickle',
     'NE Roots Sikkim Dalle Khursani Round Cherry Chilli',
     'NE Roots Wild Hill Garlic & Mustard Seed Achaar',
     'NE Roots Sun-Cured Raw Mango & Bhoot Jolokia Fusion',
@@ -163,7 +163,7 @@ export default function Reviews() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-cream)' }}>
       <Head>
         <title>Customer Reviews &amp; Testimonials | NE Roots Pickles</title>
-        <meta name="description" content="Read authentic, verified customer reviews of NE Roots Assam Bhut Jolokia, Kazi Nemu, and Dalle Khursani handcrafted pickles. 100% vegetarian." />
+        <meta name="description" content="Read authentic, verified customer reviews of NE Roots Assam Bhut Jolokia, Nemu, and Dalle Khursani handcrafted pickles. 100% vegetarian." />
         <link rel="canonical" href="https://neroots.in/reviews" />
         <meta property="og:title" content="Customer Reviews | NE Roots (North East Roots)" />
         <meta property="og:description" content="Verified reviews for handcrafted North Eastern Indian pickles from Assam." />
@@ -267,7 +267,7 @@ export default function Reviews() {
               What Food Lovers Say About <span style={{ color: 'var(--primary)' }}>NE Roots</span>
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: 15, lineHeight: 1.6, margin: '0 0 24px 0' }}>
-              Handcrafted in Assam with native ingredients like Ghost Peppers, GI-tagged Kazi Nemu lemons, and fermented bamboo shoot (Khorisa). See genuine feedback from customers across India.
+              Handcrafted in Assam with native ingredients like Ghost Peppers, GI-tagged Nemu lemons, and fermented bamboo shoot (Khorisa). See genuine feedback from customers across India.
             </p>
 
             <button
@@ -347,10 +347,10 @@ export default function Reviews() {
               🌶️ Bhut Jolokia &amp; Khorisa
             </button>
             <button
-              onClick={() => setSelectedFlavour('Kazi Nemu')}
-              className={`filter-btn ${selectedFlavour === 'Kazi Nemu' ? 'active' : ''}`}
+              onClick={() => setSelectedFlavour('Nemu')}
+              className={`filter-btn ${selectedFlavour === 'Nemu' ? 'active' : ''}`}
             >
-              🍋 Kazi Nemu Lime
+              🍋 Nemu Lime
             </button>
             <button
               onClick={() => setSelectedFlavour('Dalle Khursani')}
@@ -653,7 +653,7 @@ export default function Reviews() {
               <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>
                 📍 R.G. Baruah Road, Guwahati, Assam - 781024<br />
                 📞 +91 94350 12345 / +91 88110 54321<br />
-                ✉️ care@neroots.in
+                ✉️ soumarjyotibhuyan@gmail.com
               </p>
             </div>
           </div>
