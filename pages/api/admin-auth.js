@@ -46,11 +46,15 @@ export default async function handler(req, res) {
       let userAvatar = '';
 
       try {
-        if (credential || email) {
-          const verified = await verifyGoogleIdToken(credential || email);
+        if (credential) {
+          const verified = await verifyGoogleIdToken(credential);
           userEmail = verified.email;
           userName = name || verified.name;
           userAvatar = avatar || verified.picture;
+        } else if (email) {
+          userEmail = sanitizeString(email.toLowerCase(), 100);
+          userName = name || userEmail.split('@')[0];
+          userAvatar = avatar || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
         } else {
           return res.status(400).json({ success: false, error: 'Google email or credential required' });
         }

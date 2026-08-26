@@ -451,11 +451,12 @@
     },
     {
       "email": "soumarjyotibhuyan@gmail.com",
-      "name": "Soumarjyoti Bhuyan",
+      "name": "soumarjyotibhuyan",
       "role": "Store Administrator",
       "avatar": "https://lh3.googleusercontent.com/a/default-user=s96-c",
       "addedAt": "2026-08-25",
-      "isGoogleVerified": true
+      "isGoogleVerified": true,
+      "lastLogin": "2026-08-26T03:56:02.096Z"
     }
   ],
   "customers": [
