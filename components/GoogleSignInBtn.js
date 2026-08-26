@@ -41,12 +41,13 @@ export default function GoogleSignInBtn({
           cancel_on_tap_outside: true
         });
 
+        const isMobileScreen = typeof window !== 'undefined' && window.innerWidth < 600;
         window.google.accounts.id.renderButton(btnRef.current, {
           theme,
-          size,
+          size: isMobileScreen ? 'small' : size,
           text,
           shape,
-          width: width || (size === 'large' ? 240 : 180)
+          width: width || (isMobileScreen ? 120 : (size === 'large' ? 240 : 160))
         });
       } catch (err) {
         console.warn('GIS Button render note:', err);

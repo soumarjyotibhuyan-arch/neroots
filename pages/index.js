@@ -225,114 +225,109 @@ export default function Home() {
       {/* 3. Main Store Navbar */}
       <header className="navbar">
         <div className="container nav-inner">
-          <Link href="/" className="brand-logo" title="NE Roots (North East Roots)">
-            <img
-              src="/images/ne_roots_logo.jpg"
-              alt="NE Roots Official Brand Logo"
-              className="brand-logo-img"
-            />
-            <div>
-              <div className="brand-name">NE Roots</div>
-              <div className="brand-tagline">North East Roots • Flavours of Assam</div>
-            </div>
-          </Link>
+          <div className="nav-top-row">
+            <Link href="/" className="brand-logo" title="NE Roots (North East Roots)">
+              <img
+                src="/images/ne_roots_logo.jpg"
+                alt="NE Roots Official Brand Logo"
+                className="brand-logo-img"
+              />
+              <div className="brand-text-block">
+                <div className="brand-name">NE Roots</div>
+                <div className="brand-tagline">Flavours of Assam</div>
+              </div>
+            </Link>
 
-          <div className="nav-actions">
-            <div className="nav-search-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div className="nav-actions">
+              <Link
+                href="/team"
+                className="desktop-nav-link"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: 'var(--text-dark)',
+                  padding: '8px 12px'
+                }}
+              >
+                👥 Our Team
+              </Link>
+
+              <Link
+                href="/reviews"
+                className="desktop-nav-link"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: 'var(--text-dark)',
+                  padding: '8px 12px'
+                }}
+              >
+                ⭐ Reviews
+              </Link>
+
+              {/* Google User Identity Menu */}
+              <UserMenu />
+
+              <button onClick={() => setIsCartOpen(true)} className="cart-btn" aria-label="View shopping basket">
+                <span>🧺</span>
+                <span className="cart-badge">{cartCount}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Search Row */}
+          <div className="nav-search-row">
+            <div className="nav-search-wrapper">
+              <span className="search-icon">🔍</span>
               <input
                 type="text"
-                placeholder="Search Bhut Jolokia, Kazi Nemu..."
+                placeholder="Search Bhut Jolokia, Kazi Nemu, Dalle..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="nav-search-input"
                 aria-label="Search pickles"
               />
-              <span style={{ position: 'absolute', left: 12, color: 'var(--text-muted)', fontSize: 13 }}>🔍</span>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="search-clear-btn"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-
-            <Link
-              href="/team"
-              className="desktop-nav-link"
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: 'var(--text-dark)',
-                padding: '8px 12px'
-              }}
-            >
-              👥 Our Team
-            </Link>
-
-            <Link
-              href="/reviews"
-              className="desktop-nav-link"
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: 'var(--text-dark)',
-                padding: '8px 12px'
-              }}
-            >
-              ⭐ Reviews
-            </Link>
-
-            {/* Google User Identity Menu */}
-            <UserMenu />
-
-            <button onClick={() => setIsCartOpen(true)} className="cart-btn" aria-label="View shopping basket">
-              <span>🧺 Basket</span>
-              <span className="cart-badge">{cartCount}</span>
-            </button>
           </div>
         </div>
       </header>
 
-      {/* 4. Hero Showcase Section */}
+      {/* 4. Main Content */}
       <main className="container" style={{ flex: 1 }}>
         <section className="hero-section">
           <div className="hero-backdrop"></div>
           <div className="hero-content">
             <div className="hero-pill">
-              <span className="veg-icon" style={{ width: 12, height: 12 }}><span className="veg-icon-dot" style={{ width: 5, height: 5 }}></span></span>
+              <span className="veg-icon" style={{ width: 10, height: 10 }}><span className="veg-icon-dot" style={{ width: 4, height: 4 }}></span></span>
               <span>Authentic North Eastern FMCG Brand</span>
             </div>
             <h1 className="hero-title">
               The Bold, Soulful Flavours of <span>North East India</span>
             </h1>
             <p className="hero-desc">
-              <strong>NE Roots (North East Roots)</strong> is a vibrant FMCG brand rooted in the heart of Assam, dedicated to bringing the authentic, rich, and diverse flavours of North Eastern Indian pickles to your table. Specializing exclusively in North Eastern Indian flavours, our pickles are crafted using traditional recipes and locally sourced ingredients.
+              <strong>NE Roots (North East Roots)</strong> brings authentic, rich, and diverse flavours of Assam and the North East to your table. Handcrafted using traditional recipes and locally sourced ingredients.
             </p>
             <div className="hero-badges">
               <div className="hero-badge-item">
-                <span>🌿</span> Exclusively North Eastern Flavours
+                <span>🌿</span> 100% NE Flavours
               </div>
               <div className="hero-badge-item">
-                <span>🏺</span> Rooted in the Heart of Assam
+                <span>🏺</span> Handcrafted in Assam
               </div>
               <div className="hero-badge-item">
-                <span>💛</span> Supporting Local Agriculture
+                <span>💛</span> Direct From Farmers
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* 5. Brand Promise Quote Strip from Official Label */}
-        <section className="brand-promise-strip">
-          <div className="promise-box">
-            <div className="promise-label">
-              Our Promise
-            </div>
-            <p className="promise-quote">
-              &quot;We promise a bold, flavourful experience that celebrates the region&apos;s distinct spices and ingredients, connecting food lovers to the vibrant culture of North East India.&quot;
-            </p>
-          </div>
-          <div className="promise-box">
-            <div className="heritage-label">
-              Heritage &amp; Freshness
-            </div>
-            <p className="promise-quote">
-              &quot;We capture the unique culinary heritage of the North East, offering a taste of home and tradition in every jar. Primarily operating within Assam, we ensure freshness and authenticity while supporting local communities.&quot;
-            </p>
           </div>
         </section>
 
@@ -441,7 +436,27 @@ export default function Home() {
           </div>
         )}
 
-        {/* 8. Official Brand Label & Packaging Showcase */}
+        {/* 8. Brand Promise Quote Strip from Official Label */}
+        <section className="brand-promise-strip" style={{ marginTop: 24 }}>
+          <div className="promise-box">
+            <div className="promise-label">
+              Our Promise
+            </div>
+            <p className="promise-quote">
+              &quot;We promise a bold, flavourful experience that celebrates the region&apos;s distinct spices and ingredients, connecting food lovers to the vibrant culture of North East India.&quot;
+            </p>
+          </div>
+          <div className="promise-box">
+            <div className="heritage-label">
+              Heritage &amp; Freshness
+            </div>
+            <p className="promise-quote">
+              &quot;We capture the unique culinary heritage of the North East, offering a taste of home and tradition in every jar. Primarily operating within Assam, we ensure freshness and authenticity while supporting local communities.&quot;
+            </p>
+          </div>
+        </section>
+
+        {/* 9. Official Brand Label & Packaging Showcase */}
         <section style={{
           background: '#ffffff',
           borderRadius: 'var(--radius-lg)',

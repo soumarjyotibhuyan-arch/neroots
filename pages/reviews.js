@@ -210,37 +210,38 @@ export default function Reviews() {
       {/* Main Navbar */}
       <header className="navbar">
         <div className="container nav-inner">
-          <Link href="/" className="brand-logo" title="NE Roots (North East Roots)">
-            <img src="/images/ne_roots_logo.jpg" alt="NE Roots Logo" className="brand-logo-img" />
-            <div>
-              <div className="brand-name">NE Roots</div>
-              <div className="brand-tagline">North East Roots • Flavours of Assam</div>
+          <div className="nav-top-row">
+            <Link href="/" className="brand-logo" title="NE Roots (North East Roots)">
+              <img src="/images/ne_roots_logo.jpg" alt="NE Roots Logo" className="brand-logo-img" />
+              <div className="brand-text-block">
+                <div className="brand-name">NE Roots</div>
+                <div className="brand-tagline">Flavours of Assam</div>
+              </div>
+            </Link>
+
+            <div className="nav-actions">
+              <Link href="/" className="desktop-nav-link" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', padding: '8px 12px' }}>
+                🏪 Storefront
+              </Link>
+              <Link href="/team" className="desktop-nav-link" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', padding: '8px 12px' }}>
+                👥 Our Team
+              </Link>
+              <Link href="/reviews" className="desktop-nav-link" style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', padding: '8px 12px' }}>
+                ⭐ Reviews
+              </Link>
+
+              {/* Google User Identity Menu */}
+              <UserMenu />
+
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="cart-btn"
+                aria-label={`View Basket, ${cartCount} items`}
+              >
+                <span>🧺</span>
+                <span className="cart-badge">{cartCount}</span>
+              </button>
             </div>
-          </Link>
-
-          <div className="nav-actions">
-            <Link href="/" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)' }}>
-              Storefront
-            </Link>
-            <Link href="/team" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)' }}>
-              Our Team
-            </Link>
-            <Link href="/reviews" style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>
-              Reviews ⭐
-            </Link>
-
-            {/* Google User Identity Menu */}
-            <UserMenu />
-
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="cart-btn"
-              aria-label={`View Basket, ${cartCount} items`}
-            >
-              <span>🧺</span>
-              <span>Basket</span>
-              {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-            </button>
           </div>
         </div>
       </header>
