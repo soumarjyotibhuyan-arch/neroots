@@ -685,22 +685,40 @@ export default function Checkout() {
                           <label style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
                             ENTER YOUR UPI ID / VPA (OPTIONAL):
                           </label>
-                          <button
-                            type="button"
-                            onClick={() => setCustomerUPI('test@razorpay')}
-                            style={{
-                              background: '#eff6ff',
-                              border: '1px solid #bfdbfe',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                              fontSize: 11,
-                              fontWeight: 600,
-                              color: '#1d4ed8',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            ⚡ Fill test@razorpay
-                          </button>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              type="button"
+                              onClick={() => setCustomerUPI('success@razorpay')}
+                              style={{
+                                background: '#dcfce7',
+                                border: '1px solid #86efac',
+                                borderRadius: 4,
+                                padding: '2px 8px',
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: '#15803d',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              ⚡ Fill success@razorpay
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCustomerUPI('test@razorpay')}
+                              style={{
+                                background: '#eff6ff',
+                                border: '1px solid #bfdbfe',
+                                borderRadius: 4,
+                                padding: '2px 8px',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: '#1d4ed8',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              test@razorpay
+                            </button>
+                          </div>
                         </div>
                         <input
                           type="text"
