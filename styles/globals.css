@@ -2078,6 +2078,17 @@ html, body {
     padding: 12px 18px;
     font-size: 13px;
   }
+
+  /* Compact User Profile Button on Mobile */
+  .user-menu-btn {
+    padding: 4px !important;
+    gap: 0 !important;
+  }
+
+  .user-menu-details,
+  .user-menu-arrow {
+    display: none !important;
+  }
 }
 
 

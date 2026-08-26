@@ -47,6 +47,7 @@ export default function UserMenu() {
           boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           transition: 'all 0.2s ease'
         }}
+        className="user-menu-btn"
         aria-label="User account menu"
       >
         <img
@@ -54,7 +55,7 @@ export default function UserMenu() {
           alt={user.name}
           style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
         />
-        <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
+        <div className="user-menu-details" style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', maxWidth: 110, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {user.name}
           </span>
@@ -68,7 +69,7 @@ export default function UserMenu() {
             </span>
           )}
         </div>
-        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>▼</span>
+        <span className="user-menu-arrow" style={{ fontSize: 10, color: 'var(--text-muted)' }}>▼</span>
       </button>
 
       {/* Dropdown Menu */}
