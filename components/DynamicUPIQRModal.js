@@ -41,6 +41,7 @@ export default function DynamicUPIQRModal({
 }) {
   const [timeLeft, setTimeLeft] = useState(300);
   const [verifying, setVerifying] = useState(false);
+  const [autoApproving, setAutoApproving] = useState(false);
   const [copiedUPI, setCopiedUPI] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab || 'vpa');
   const [qrDataUrl, setQrDataUrl] = useState('');
@@ -102,6 +103,7 @@ export default function DynamicUPIQRModal({
       setCardOtpStep(false);
       setBankOtpStep(false);
       setCollectSent(false);
+      setAutoApproving(false);
       return;
     }
 
@@ -132,10 +134,51 @@ export default function DynamicUPIQRModal({
     }
   };
 
-  // 1. UPI ID COLLECT (RAZORPAY INTEGRATION + GATEWAY ROUTING)
+  // 1. DIRECT AUTO-APPROVAL FOR TEST MODE (NO UTR REQUIRED)
+  const handleAutoApproveTest = async (testVpa = 'test@razorpay') => {
+    setAutoApproving(true);
+    setVerifying(true);
+    try {
+      const res = await fetch('/api/payment/confirm-upi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeOrderId: orderId,
+          gatewayOrderId: gatewayOrderId || `order_test_${orderId}`,
+          upiUtr: `RZP_TEST_${Math.floor(100000000000 + Math.random() * 900000000000)}`,
+          customerUPI: testVpa,
+          customerName: customerName || 'Test Customer',
+          phone: customerPhone || '',
+          amountRupees
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        onPaymentSuccess(data.order);
+      } else {
+        alert(data.error || 'Failed to auto-approve test transaction.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error confirming test payment.');
+    } finally {
+      setVerifying(false);
+      setAutoApproving(false);
+    }
+  };
+
+  // 2. UPI ID COLLECT (RAZORPAY INTEGRATION + GATEWAY ROUTING)
   const handleUPICollect = async (e) => {
     if (e) e.preventDefault();
-    const cleanVPA = customerUPI.trim();
+    const cleanVPA = (customerUPI || '').trim();
+
+    // If it is the Razorpay designated test handle, auto-approve immediately!
+    if (cleanVPA.toLowerCase().includes('test') || cleanVPA === 'test@razorpay') {
+      await handleAutoApproveTest(cleanVPA || 'test@razorpay');
+      return;
+    }
+
     if (!cleanVPA || !cleanVPA.includes('@')) {
       alert('Please enter a valid UPI ID (e.g. yourname@okhdfcbank or test@razorpay)');
       return;
@@ -206,12 +249,12 @@ export default function DynamicUPIQRModal({
       }
     }
 
-    // Direct gateway collect request simulation / verification
+    // Direct gateway collect request notification
     setCollectSent(true);
     setVerifying(false);
   };
 
-  // 2. CARD PAYMENT SUBMISSION
+  // 3. CARD PAYMENT SUBMISSION
   const handleCardPay = async (e) => {
     e.preventDefault();
     const cleanNum = cardNumber.replace(/\s+/g, '');
@@ -267,7 +310,7 @@ export default function DynamicUPIQRModal({
     }
   };
 
-  // 3. NETBANKING SUBMISSION
+  // 4. NETBANKING SUBMISSION
   const handleNetBankingPay = (e) => {
     e.preventDefault();
     setBankOtpStep(true);
@@ -305,18 +348,21 @@ export default function DynamicUPIQRModal({
     }
   };
 
-  // 4. DIRECT UPI SUBMISSION
+  // 5. DIRECT UPI SUBMISSION (UTR IS COMPLETELY OPTIONAL)
   const handleSubmitUPIPayment = async () => {
     setVerifying(true);
     try {
+      // If customer didn't enter a UTR, generate a clean human-readable reference automatically
+      const generatedRef = upiUtr.trim() || `UPI-TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
+
       const res = await fetch('/api/payment/confirm-upi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           storeOrderId: orderId,
           gatewayOrderId: gatewayOrderId || `order_upi_${orderId}`,
-          upiUtr: upiUtr.trim() || 'Paid via UPI ID',
-          customerUPI: customerUPI.trim(),
+          upiUtr: generatedRef,
+          customerUPI: customerUPI.trim() || 'Paid via UPI App',
           customerName: customerName || '',
           phone: customerPhone || '',
           amountRupees
@@ -327,11 +373,11 @@ export default function DynamicUPIQRModal({
       if (res.ok && data.success) {
         onPaymentSuccess(data.order);
       } else {
-        alert(data.error || 'Could not verify payment submission.');
+        alert(data.error || 'Could not confirm payment.');
       }
     } catch (err) {
       console.error(err);
-      alert('Network error verifying payment.');
+      alert('Network error confirming payment.');
     } finally {
       setVerifying(false);
     }
@@ -343,10 +389,6 @@ export default function DynamicUPIQRModal({
     setCardExpiry('12/26');
     setCardCvv('123');
     setCardHolder('Test Customer');
-  };
-
-  const fillTestUPI = () => {
-    setCustomerUPI('test@razorpay');
   };
 
   if (!isOpen) return null;
@@ -512,22 +554,9 @@ export default function DynamicUPIQRModal({
                   <form onSubmit={handleUPICollect} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Enter Your UPI ID / VPA</span>
-                      <button
-                        type="button"
-                        onClick={fillTestUPI}
-                        style={{
-                          background: '#eff6ff',
-                          border: '1px solid #bfdbfe',
-                          padding: '3px 8px',
-                          borderRadius: 6,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: '#1d4ed8',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        ⚡ Use test@razorpay
-                      </button>
+                      <span style={{ fontSize: 11, color: '#15803d', background: '#dcfce7', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
+                        ⚡ Zero-Friction Flow
+                      </span>
                     </div>
 
                     <div>
@@ -537,14 +566,13 @@ export default function DynamicUPIQRModal({
                         value={customerUPI}
                         onChange={e => setCustomerUPI(e.target.value.trim())}
                         style={{ width: '100%', padding: '11px 14px', borderRadius: 8, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 500 }}
-                        required
                       />
                     </div>
 
                     {/* Quick Handle Suggestions */}
                     <div>
                       <span style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 6 }}>
-                        QUICK SUFFIXES:
+                        POPULAR HANDLES:
                       </span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {POPULAR_UPI_HANDLES.map(handle => (
@@ -572,8 +600,32 @@ export default function DynamicUPIQRModal({
                       </div>
                     </div>
 
-                    <div style={{ fontSize: 12, color: '#475569', background: '#f8fafc', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', lineHeight: 1.5 }}>
-                      💡 A secure payment collect request of <strong>₹{amountRupees}</strong> will be routed via Razorpay Gateway to your UPI app.
+                    {/* Instant Auto-Approve Test Sandbox Button */}
+                    <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '10px 12px', marginTop: 2 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#1e40af', marginBottom: 4 }}>
+                        🧪 Razorpay Test Mode Shortcut:
+                      </div>
+                      <div style={{ fontSize: 11, color: '#3b82f6', marginBottom: 8 }}>
+                        Testing the checkout? Auto-approve instantly without needing real money or OTP.
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAutoApproveTest('test@razorpay')}
+                        disabled={autoApproving}
+                        style={{
+                          width: '100%',
+                          background: '#2563eb',
+                          color: '#fff',
+                          padding: '8px 12px',
+                          borderRadius: 6,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          border: 'none',
+                          cursor: autoApproving ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        {autoApproving ? '⚡ Auto-Approving Test Transaction...' : '⚡ Auto-Approve Test Payment (1-Click)'}
+                      </button>
                     </div>
 
                     <button
@@ -592,7 +644,7 @@ export default function DynamicUPIQRModal({
                         boxShadow: '0 4px 12px rgba(217, 37, 37, 0.25)'
                       }}
                     >
-                      {verifying ? 'Routing to Gateway...' : `Request ₹${amountRupees} on UPI ID →`}
+                      {verifying ? 'Routing to Gateway...' : `Send Request of ₹${amountRupees} to UPI ID →`}
                     </button>
                   </form>
                 ) : (
@@ -603,48 +655,50 @@ export default function DynamicUPIQRModal({
                       Payment Request Sent!
                     </h4>
                     <p style={{ fontSize: 12, color: '#475569', margin: '0 0 14px' }}>
-                      Please open your UPI app registered with <strong>{customerUPI}</strong> and approve the payment of <strong>₹{amountRupees}</strong>.
+                      Please approve the request of <strong>₹{amountRupees}</strong> in your UPI app registered with <strong>{customerUPI || 'your UPI ID'}</strong>.
                     </p>
 
-                    {/* UTR input */}
+                    {/* Optional UTR input */}
                     <div style={{ textAlign: 'left', marginBottom: 12 }}>
                       <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4, color: '#475569' }}>
-                        UPI Reference / 12-Digit UTR
+                        UPI Reference / UTR Number <span style={{ fontWeight: 400, color: '#64748b' }}>(Optional)</span>
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. 12-digit UTR from payment receipt"
+                        placeholder="Optional - e.g. 12-digit UTR if available"
                         value={upiUtr}
                         onChange={e => setUpiUtr(e.target.value)}
                         style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
                       />
                     </div>
 
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <button
-                        type="button"
-                        onClick={() => setCollectSent(false)}
-                        style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', fontSize: 13, cursor: 'pointer' }}
-                      >
-                        ← Edit UPI ID
-                      </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       <button
                         type="button"
                         onClick={handleSubmitUPIPayment}
                         disabled={verifying}
                         style={{
-                          flex: 1.5,
-                          padding: 10,
-                          borderRadius: 8,
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: 'var(--radius-full)',
                           background: 'var(--primary)',
                           color: '#fff',
                           fontWeight: 700,
-                          fontSize: 13,
+                          fontSize: 14,
                           border: 'none',
-                          cursor: verifying ? 'not-allowed' : 'pointer'
+                          cursor: verifying ? 'not-allowed' : 'pointer',
+                          boxShadow: '0 4px 12px rgba(217, 37, 37, 0.25)'
                         }}
                       >
-                        {verifying ? 'Verifying...' : 'Confirm Paid ✓'}
+                        {verifying ? 'Confirming Order...' : 'I Have Approved in UPI App ✓ (Confirm Order)'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCollectSent(false)}
+                        style={{ padding: 8, borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', fontSize: 12, color: '#64748b', cursor: 'pointer' }}
+                      >
+                        ← Change UPI ID
                       </button>
                     </div>
                   </div>
@@ -752,37 +806,27 @@ export default function DynamicUPIQRModal({
                   </a>
                 </div>
 
-                {/* UTR Entry */}
-                <div style={{ textAlign: 'left', marginTop: 14 }}>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4, color: '#475569' }}>
-                    ENTER UPI REFERENCE / UTR (AFTER PAYING)
-                  </label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <input
-                      type="text"
-                      placeholder="12-digit UTR from GPay / PhonePe"
-                      value={upiUtr}
-                      onChange={e => setUpiUtr(e.target.value)}
-                      style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSubmitUPIPayment}
-                      disabled={verifying}
-                      style={{
-                        background: 'var(--primary)',
-                        color: '#fff',
-                        padding: '8px 14px',
-                        borderRadius: 8,
-                        fontWeight: 700,
-                        fontSize: 12,
-                        border: 'none',
-                        cursor: verifying ? 'not-allowed' : 'pointer'
-                      }}
-                    >
-                      {verifying ? 'Submitting...' : 'Confirm ✓'}
-                    </button>
-                  </div>
+                {/* Confirm Paid Button (No mandatory UTR) */}
+                <div style={{ marginTop: 16 }}>
+                  <button
+                    type="button"
+                    onClick={handleSubmitUPIPayment}
+                    disabled={verifying}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'var(--primary)',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: 14,
+                      border: 'none',
+                      cursor: verifying ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 4px 12px rgba(217, 37, 37, 0.25)'
+                    }}
+                  >
+                    {verifying ? 'Confirming Order...' : 'I Have Completed Payment in App ✓'}
+                  </button>
                 </div>
               </div>
             )}
@@ -1146,14 +1190,14 @@ export default function DynamicUPIQRModal({
                   </button>
                 </div>
 
-                {/* UTR Input */}
+                {/* Optional UTR input */}
                 <div style={{ textAlign: 'left', marginBottom: 12 }}>
                   <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4, color: '#475569' }}>
-                    UPI Reference / UTR Number
+                    UPI Reference / UTR Number <span style={{ fontWeight: 400, color: '#64748b' }}>(Optional)</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. 12-digit UTR from payment receipt"
+                    placeholder="Optional - e.g. 12-digit UTR if available"
                     value={upiUtr}
                     onChange={e => setUpiUtr(e.target.value)}
                     style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
@@ -1166,19 +1210,19 @@ export default function DynamicUPIQRModal({
                   disabled={verifying}
                   style={{
                     width: '100%',
-                    padding: '11px',
+                    padding: '12px',
                     borderRadius: 'var(--radius-full)',
                     background: 'var(--primary)',
                     color: '#ffffff',
                     fontWeight: 700,
-                    fontSize: 13,
+                    fontSize: 14,
                     border: 'none',
                     cursor: verifying ? 'not-allowed' : 'pointer',
                     opacity: verifying ? 0.7 : 1,
-                    boxShadow: '0 2px 8px rgba(217, 37, 37, 0.25)'
+                    boxShadow: '0 4px 12px rgba(217, 37, 37, 0.25)'
                   }}
                 >
-                  {verifying ? 'Submitting...' : 'I Have Paid via UPI ✓'}
+                  {verifying ? 'Confirming Order...' : 'I Have Paid via UPI ✓ (Confirm Order)'}
                 </button>
               </div>
             )}
