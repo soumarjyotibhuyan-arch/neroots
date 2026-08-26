@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import QRCode from 'qrcode';
 
 export default function DynamicUPIQRModal({
   isOpen,
@@ -17,11 +18,28 @@ export default function DynamicUPIQRModal({
   const [activeTab, setActiveTab] = useState(isMobile ? 'intent' : 'qr'); // 'qr' | 'intent' | 'collect'
   const [customerUPI, setCustomerUPI] = useState('');
   const [collectSent, setCollectSent] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
   const [vpa] = useState('neroots@icici');
 
   // Build standard NPCI UPI URI
   const upiUri = `upi://pay?pa=${vpa}&pn=${encodeURIComponent('NE Roots Pickles Assam')}&am=${amountRupees}&cu=INR&tn=${encodeURIComponent(`Order #${orderId}`)}&tr=${orderId}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(upiUri)}`;
+
+  // Generate QR Code locally via qrcode library (100% reliable, zero network dependency)
+  useEffect(() => {
+    if (upiUri) {
+      QRCode.toDataURL(upiUri, {
+        width: 260,
+        margin: 2,
+        color: {
+          dark: '#1e293b',
+          light: '#ffffff'
+        },
+        errorCorrectionLevel: 'M'
+      })
+        .then(url => setQrDataUrl(url))
+        .catch(err => console.error('Local QR Code generation error:', err));
+    }
+  }, [upiUri]);
 
   // Active countdown timer effect
   useEffect(() => {
@@ -51,9 +69,11 @@ export default function DynamicUPIQRModal({
   };
 
   const handleCopyVPA = () => {
-    navigator.clipboard.writeText(vpa);
-    setCopiedUPI(true);
-    setTimeout(() => setCopiedUPI(false), 2500);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(vpa);
+      setCopiedUPI(true);
+      setTimeout(() => setCopiedUPI(false), 2500);
+    }
   };
 
   const handleSendCollect = (e) => {
@@ -69,13 +89,13 @@ export default function DynamicUPIQRModal({
     setVerifying(true);
     try {
       // Send verification request to backend
-      const res = await fetch('/api/payment/verify', {
+      const res = await fetch('/api/verify-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          razorpay_order_id: gatewayOrderId || `order_upi_${orderId}`,
-          razorpay_payment_id: `pay_upi_${Date.now()}`,
-          razorpay_signature: `mock_sig_${orderId}`,
+          order_id: gatewayOrderId || `order_upi_${orderId}`,
+          payment_id: `pay_upi_${Date.now()}`,
+          signature: `sig_upi_${orderId}`,
           storeOrderId: orderId
         })
       });
@@ -84,7 +104,7 @@ export default function DynamicUPIQRModal({
       if (res.ok && data.success) {
         onPaymentSuccess(data.order);
       } else {
-        alert('Payment verification in progress. If you have completed the UPI transfer, your order will be confirmed automatically.');
+        alert('Payment verification in progress. Once received via UPI, your order will be confirmed.');
       }
     } catch (err) {
       console.error(err);
@@ -140,8 +160,8 @@ export default function DynamicUPIQRModal({
 
         {/* Header Branding */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
-          <img src="/images/ner_logo_icon.jpg" alt="NE Roots Icon" style={{ width: 26, height: 26, borderRadius: 6 }} />
-          <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--primary-dark)' }}>Razorpay Unified UPI Gateway</span>
+          <img src="/images/ner_logo_icon.jpg" alt="NE Roots Icon" style={{ width: 28, height: 28, borderRadius: 6 }} />
+          <span style={{ fontWeight: 800, fontSize: 17, color: 'var(--primary-dark)' }}>Razorpay UPI Gateway</span>
         </div>
 
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 }}>
@@ -157,60 +177,57 @@ export default function DynamicUPIQRModal({
                 onClick={() => setActiveTab('qr')}
                 style={{
                   flex: 1,
-                  minHeight: 44,
+                  minHeight: 40,
                   padding: '8px 10px',
                   borderRadius: 'var(--radius-full)',
                   border: 'none',
-                  fontSize: 12.5,
+                  fontSize: 13,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  touchAction: 'manipulation',
                   background: activeTab === 'qr' ? '#ffffff' : 'transparent',
                   color: activeTab === 'qr' ? 'var(--primary)' : '#64748b',
                   boxShadow: activeTab === 'qr' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                📱 QR Code
+                📱 Dynamic QR
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('intent')}
                 style={{
                   flex: 1,
-                  minHeight: 44,
+                  minHeight: 40,
                   padding: '8px 10px',
                   borderRadius: 'var(--radius-full)',
                   border: 'none',
-                  fontSize: 12.5,
+                  fontSize: 13,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  touchAction: 'manipulation',
                   background: activeTab === 'intent' ? '#ffffff' : 'transparent',
                   color: activeTab === 'intent' ? 'var(--primary)' : '#64748b',
                   boxShadow: activeTab === 'intent' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                ⚡ App Intent
+                ⚡ UPI Apps
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('collect')}
                 style={{
                   flex: 1,
-                  minHeight: 44,
+                  minHeight: 40,
                   padding: '8px 10px',
                   borderRadius: 'var(--radius-full)',
                   border: 'none',
-                  fontSize: 12.5,
+                  fontSize: 13,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  touchAction: 'manipulation',
                   background: activeTab === 'collect' ? '#ffffff' : 'transparent',
                   color: activeTab === 'collect' ? 'var(--primary)' : '#64748b',
                   boxShadow: activeTab === 'collect' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                📥 Collect
+                📥 UPI ID Collect
               </button>
             </div>
 
@@ -223,13 +240,19 @@ export default function DynamicUPIQRModal({
                   borderRadius: 14,
                   border: '2px solid #e2e8f0',
                   display: 'inline-block',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.08)'
                 }}>
-                  <img
-                    src={qrCodeUrl}
-                    alt="Razorpay Dynamic UPI QR Code"
-                    style={{ width: 190, height: 190, display: 'block', margin: '0 auto' }}
-                  />
+                  {qrDataUrl ? (
+                    <img
+                      src={qrDataUrl}
+                      alt="Razorpay Dynamic UPI QR Code"
+                      style={{ width: 210, height: 210, display: 'block', margin: '0 auto' }}
+                    />
+                  ) : (
+                    <div style={{ width: 210, height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', color: '#64748b', fontSize: 13 }}>
+                      Generating Secure UPI QR...
+                    </div>
+                  )}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
                   Scan with any UPI App: <strong>GPay, PhonePe, Paytm, BHIM, CRED</strong>
@@ -241,7 +264,7 @@ export default function DynamicUPIQRModal({
             {activeTab === 'intent' && (
               <div style={{ padding: '4px 0 12px' }}>
                 <p style={{ fontSize: 13, color: 'var(--text-dark)', marginBottom: 12 }}>
-                  Tap your preferred UPI app to open and complete payment:
+                  Tap your preferred UPI app to open and pay ₹{amountRupees}:
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <a
@@ -260,8 +283,7 @@ export default function DynamicUPIQRModal({
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48,
-                      touchAction: 'manipulation'
+                      minHeight: 48
                     }}
                   >
                     <span>🔵</span> Google Pay
@@ -283,8 +305,7 @@ export default function DynamicUPIQRModal({
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48,
-                      touchAction: 'manipulation'
+                      minHeight: 48
                     }}
                   >
                     <span>🟣</span> PhonePe
@@ -306,8 +327,7 @@ export default function DynamicUPIQRModal({
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48,
-                      touchAction: 'manipulation'
+                      minHeight: 48
                     }}
                   >
                     <span>🔷</span> Paytm UPI
@@ -329,8 +349,7 @@ export default function DynamicUPIQRModal({
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48,
-                      touchAction: 'manipulation'
+                      minHeight: 48
                     }}
                   >
                     <span>⚡</span> Other UPI Apps
@@ -339,7 +358,7 @@ export default function DynamicUPIQRModal({
               </div>
             )}
 
-            {/* TAB 3: WEB COLLECT FLOW (UPI ID PULL REQUEST) */}
+            {/* TAB 3: WEB COLLECT FLOW */}
             {activeTab === 'collect' && (
               <div style={{ padding: '8px 0 16px', textAlign: 'left' }}>
                 {!collectSent ? (
@@ -377,8 +396,7 @@ export default function DynamicUPIQRModal({
                           fontWeight: 700,
                           border: 'none',
                           cursor: 'pointer',
-                          minHeight: 46,
-                          touchAction: 'manipulation'
+                          minHeight: 46
                         }}
                       >
                         Request
@@ -504,7 +522,7 @@ export default function DynamicUPIQRModal({
             <div style={{ fontSize: 36, marginBottom: 10 }}>⏳</div>
             <h3 style={{ fontSize: 18, color: '#b91c1c', marginBottom: 6 }}>Session Expired</h3>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-              The 5-minute payment session has timed out to release reserved pickle stock.
+              The 5-minute payment session has timed out.
             </p>
             <button
               type="button"

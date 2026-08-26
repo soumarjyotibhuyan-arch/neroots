@@ -117,11 +117,11 @@ export default function App({ Component, pageProps }) {
     }, 3000);
   };
 
-  const loginWithGoogle = async (credentialOrEmail) => {
+  const loginWithGoogle = async (credentialOrPayload) => {
     try {
-      const payload = typeof credentialOrEmail === 'string' && credentialOrEmail.includes('.')
-        ? { credential: credentialOrEmail }
-        : { email: credentialOrEmail };
+      const payload = typeof credentialOrPayload === 'string'
+        ? { credential: credentialOrPayload }
+        : credentialOrPayload;
 
       const res = await fetch('/api/auth/google', {
         method: 'POST',

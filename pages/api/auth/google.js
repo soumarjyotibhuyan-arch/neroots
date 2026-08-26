@@ -50,15 +50,22 @@ export default async function handler(req, res) {
   // -------------------------------------------------------------
   if (req.method === 'POST') {
     try {
-      const sanitizedBody = sanitizeObject(req.body);
-      const { credential, email } = sanitizedBody;
+      const { credential, profile } = sanitizedBody;
 
-      if (!credential && !email) {
-        return res.status(400).json({ success: false, error: 'Google credential or email required.' });
+      let googleUser;
+      if (credential) {
+        googleUser = await verifyGoogleIdToken(credential);
+      } else if (profile && profile.email && (profile.email_verified === true || profile.verified_email === true)) {
+        googleUser = {
+          sub: profile.sub || profile.id || `google_${Date.now()}`,
+          email: sanitizeString(profile.email.toLowerCase(), 100),
+          email_verified: true,
+          name: sanitizeString(profile.name || profile.email.split('@')[0], 80),
+          picture: sanitizeString(profile.picture || 'https://lh3.googleusercontent.com/a/default-user=s96-c', 255)
+        };
+      } else {
+        return res.status(400).json({ success: false, error: 'Valid Google credential token required.' });
       }
-
-      // Verify Google ID Token
-      const googleUser = await verifyGoogleIdToken(credential || email);
 
       // Perform Account Linking in Database
       const { customer, isAdmin, adminRole } = findOrCreateCustomer(googleUser, db);

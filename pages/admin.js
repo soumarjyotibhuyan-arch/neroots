@@ -705,87 +705,18 @@ export default function Admin() {
               </div>
             )}
 
-            {/* Google One Tap / Button Container */}
-            <div ref={googleBtnRef} style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}></div>
+            {/* Official Google Identity Services Button */}
+            <div ref={googleBtnRef} style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, minHeight: 44 }}></div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
-              <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }}></div>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Verify Google Account</span>
-              <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }}></div>
-            </div>
-
-            {/* Google Email Verification Form */}
-            <form onSubmit={handleManualGoogleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-                <input
-                  type="email"
-                  placeholder="Enter your Google email (e.g., admin@nanirasoi.com)"
-                  value={googleEmailInput}
-                  onChange={e => setGoogleEmailInput(e.target.value)}
-                  autoFocus
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: 10,
-                    border: '1px solid var(--border-color)',
-                    fontSize: 14,
-                    background: 'var(--bg-cream)'
-                  }}
-                  required
-                />
+            <div style={{ marginTop: 24, padding: '16px', background: '#f8fafc', borderRadius: 12, border: '1px solid var(--border-color)', textAlign: 'left', fontSize: 12.5, lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>🔒</span> Whitelisted Admin Security:
               </div>
-
-              <button
-                type="submit"
-                disabled={authLoading}
-                style={{
-                  background: 'var(--primary)',
-                  color: '#ffffff',
-                  padding: '14px',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  boxShadow: '0 4px 14px rgba(35, 83, 44, 0.3)',
-                  opacity: authLoading ? 0.7 : 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8
-                }}
-              >
-                <span>{authLoading ? 'Verifying with Google Whitelist...' : 'Verify Google Admin Account →'}</span>
-              </button>
-            </form>
-
-            {/* Quick Test Helper for Developer / Store Owner */}
-            <div style={{ marginTop: 24, padding: '14px', background: 'var(--bg-cream)', borderRadius: 10, border: '1px dashed var(--border-color)', textAlign: 'left', fontSize: 12 }}>
-              <div style={{ fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 4 }}>
-                👥 Authorized Admin Google Accounts:
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoogleEmailInput('utpalabhuyan29@gmail.com');
-                    performGoogleAuth({ email: 'utpalabhuyan29@gmail.com', name: "Utpala Bhuyan" });
-                  }}
-                  style={{ background: '#fff', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: 6, fontSize: 12, textAlign: 'left', cursor: 'pointer' }}
-                >
-                  👑 <strong>utpalabhuyan29@gmail.com</strong> (Owner / Super Admin)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoogleEmailInput('soumarjyotibhuyan@gmail.com');
-                    performGoogleAuth({ email: 'soumarjyotibhuyan@gmail.com', name: "Soumarjyoti Bhuyan" });
-                  }}
-                  style={{ background: '#fff', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: 6, fontSize: 12, textAlign: 'left', cursor: 'pointer' }}
-                >
-                  ⚡ <strong>soumarjyotibhuyan@gmail.com</strong> (Store Administrator)
-                </button>
-              </div>
-              <div style={{ marginTop: 8, color: 'var(--text-muted)', fontSize: 11 }}>
-                ℹ️ Any other unlisted Google account will be automatically blocked by the access control system.
+              <p style={{ margin: '0 0 10px', color: 'var(--text-muted)' }}>
+                Only verified Google accounts registered in the store whitelist (<strong>utpalabhuyan29@gmail.com</strong> or <strong>soumarjyotibhuyan@gmail.com</strong>) can access the store management portal.
+              </p>
+              <div style={{ color: '#64748b', fontSize: 11.5 }}>
+                ℹ️ Google checks your credentials cryptographically on Google&apos;s servers before granting access.
               </div>
             </div>
           </div>

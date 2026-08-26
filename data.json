@@ -188,6 +188,36 @@
   ],
   "orders": [
     {
+      "id": "PKL-6646",
+      "gatewayOrderId": "order_TUEx8AR4kVHO2O",
+      "receiptId": "rcpt_1787712774108_4231",
+      "customerName": "Soumarjyoti Bhuyan",
+      "phone": "1234567890",
+      "email": "soumarjyotibhuyan@gmail.com",
+      "address": "Dighaliati, Nagaon - 782103",
+      "notes": "",
+      "customerId": null,
+      "paymentMethod": "UPI / Online Paid",
+      "subtotal": 747,
+      "discount": 0,
+      "shipping": 0,
+      "total": 747,
+      "cart": [
+        {
+          "id": 2,
+          "name": "Assam Kazi Nemu Lime",
+          "weight": "250g",
+          "price": 249,
+          "quantity": 3,
+          "image": "/images/kazi_nemu_pickle.jpg"
+        }
+      ],
+      "status": "Payment Pending",
+      "paymentGateway": "Razorpay Standard Checkout",
+      "createdAt": "2026-08-26T02:52:54.291Z",
+      "date": "2026-08-26 02:52"
+    },
+    {
       "id": "PKL-3496",
       "customerName": "Bikram Sharma",
       "phone": "9811223344",

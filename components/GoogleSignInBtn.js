@@ -12,26 +12,33 @@ export default function GoogleSignInBtn({
 }) {
   const btnRef = useRef(null);
   const { user, loginWithGoogle, isAuthLoading } = useStore();
-  const [showModal, setShowModal] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfigHelp, setShowConfigHelp] = useState(false);
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
-  const isRealClientId = clientId && !clientId.includes('example') && !clientId.startsWith('1234567890');
+  const isConfigured = clientId && !clientId.includes('example') && !clientId.startsWith('1234567890');
 
   useEffect(() => {
-    // Only attempt official Google Identity Services iframe if a valid client ID is configured
-    if (isRealClientId && !user && typeof window !== 'undefined' && window.google?.accounts?.id && btnRef.current) {
+    if (user || typeof window === 'undefined') return;
+
+    // Load Google Identity Services SDK if not yet loaded
+    const initGIS = () => {
+      if (!window.google?.accounts?.id || !btnRef.current) return;
+
       try {
+        const effectiveClientId = isConfigured ? clientId : '1234567890-example.apps.googleusercontent.com';
+
         window.google.accounts.id.initialize({
-          client_id: clientId,
+          client_id: effectiveClientId,
           callback: async (response) => {
-            if (response.credential) {
+            if (response && response.credential) {
               const res = await loginWithGoogle(response.credential);
-              if (res.success && onSuccess) onSuccess(res.user);
+              if (res && res.success && onSuccess) {
+                onSuccess(res.user);
+              }
             }
           },
-          auto_select: false
+          auto_select: false,
+          cancel_on_tap_outside: true
         });
 
         window.google.accounts.id.renderButton(btnRef.current, {
@@ -39,13 +46,25 @@ export default function GoogleSignInBtn({
           size,
           text,
           shape,
-          width: width || (size === 'large' ? 280 : 200)
+          width: width || (size === 'large' ? 240 : 180)
         });
       } catch (err) {
         console.warn('GIS Button render note:', err);
       }
+    };
+
+    if (window.google?.accounts?.id) {
+      initGIS();
+    } else {
+      const checkInterval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(checkInterval);
+          initGIS();
+        }
+      }, 300);
+      return () => clearInterval(checkInterval);
     }
-  }, [user, theme, size, text, shape, width, isRealClientId, clientId]);
+  }, [user, theme, size, text, shape, width, isConfigured, clientId]);
 
   if (isAuthLoading) {
     return (
@@ -57,39 +76,56 @@ export default function GoogleSignInBtn({
     return null;
   }
 
-  const handleEmailSubmit = async (e) => {
-    e?.preventDefault();
-    if (!emailInput.trim()) return;
-    setIsSubmitting(true);
-    const res = await loginWithGoogle(emailInput.trim());
-    setIsSubmitting(false);
-    if (res.success) {
-      setShowModal(false);
-      if (onSuccess) onSuccess(res.user);
-    }
-  };
+  // Handle custom button click to trigger Google OAuth popup
+  const handleCustomGoogleClick = () => {
+    if (typeof window === 'undefined') return;
 
-  const handleQuickLogin = async (email) => {
-    setIsSubmitting(true);
-    const res = await loginWithGoogle(email);
-    setIsSubmitting(false);
-    if (res.success) {
-      setShowModal(false);
-      if (onSuccess) onSuccess(res.user);
+    if (!isConfigured) {
+      setShowConfigHelp(true);
+      return;
+    }
+
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // If One Tap prompt was skipped, initiate standard OAuth2 token flow
+          if (window.google?.accounts?.oauth2) {
+            const tokenClient = window.google.accounts.oauth2.initTokenClient({
+              client_id: clientId,
+              scope: 'email profile openid',
+              callback: async (tokenResponse) => {
+                if (tokenResponse && tokenResponse.access_token) {
+                  try {
+                    const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                      headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                    });
+                    const profile = await userInfoRes.json();
+                    if (profile && profile.email) {
+                      const res = await loginWithGoogle(profile);
+                      if (res.success && onSuccess) onSuccess(res.user);
+                    }
+                  } catch (e) {
+                    console.error('Failed to fetch Google profile:', e);
+                  }
+                }
+              }
+            });
+            tokenClient.requestAccessToken();
+          }
+        }
+      });
     }
   };
 
   return (
     <>
       <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-        {/* If valid Google Cloud Client ID is configured, render official iframe */}
-        {isRealClientId ? (
-          <div ref={btnRef}></div>
-        ) : (
-          /* Accessible, 100% resilient Google Sign In button with 0 OAuth 401 errors */
+        {/* Render container for Official Google Identity Services SDK button */}
+        <div ref={btnRef} onClick={handleCustomGoogleClick} style={{ cursor: 'pointer' }}>
+          {/* Fallback button shown before iframe loads */}
           <button
             type="button"
-            onClick={() => setShowModal(true)}
+            onClick={handleCustomGoogleClick}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -115,14 +151,14 @@ export default function GoogleSignInBtn({
             </svg>
             <span>{label}</span>
           </button>
-        )}
+        </div>
       </div>
 
-      {/* Google Authentication Modal */}
-      {showModal && (
+      {/* Google Cloud Console Setup Helper Modal (shown if Client ID is missing) */}
+      {showConfigHelp && (
         <div
           className="cart-drawer-overlay"
-          onClick={() => setShowModal(false)}
+          onClick={() => setShowConfigHelp(false)}
           style={{ zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
         >
           <div
@@ -130,18 +166,18 @@ export default function GoogleSignInBtn({
             style={{
               background: '#ffffff',
               borderRadius: 20,
-              maxWidth: 440,
+              maxWidth: 480,
               width: '100%',
-              padding: '32px 28px',
+              padding: '30px 26px',
               boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
               border: '1px solid var(--border-color)',
-              textAlign: 'center',
+              textAlign: 'left',
               position: 'relative'
             }}
           >
             <button
               type="button"
-              onClick={() => setShowModal(false)}
+              onClick={() => setShowConfigHelp(false)}
               style={{
                 position: 'absolute',
                 top: 16,
@@ -159,7 +195,7 @@ export default function GoogleSignInBtn({
               ✕
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
               <svg width="28" height="28" viewBox="0 0 18 18">
                 <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z" fill="#4285F4"/>
                 <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
@@ -167,107 +203,41 @@ export default function GoogleSignInBtn({
                 <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
               </svg>
               <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--text-dark)' }}>
-                Sign in with Google
+                Google Sign-In Configuration
               </h3>
             </div>
 
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
-              Connect your Google Account to auto-fill checkout, link order history, and access verified reviews.
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 16 }}>
+              To enable official Google OAuth popup verification, configure your <strong>Google OAuth Client ID</strong> from the Google Cloud Console:
             </p>
 
-            {/* Quick 1-Click Access for Store Admins */}
-            <div style={{ marginBottom: 20, textAlign: 'left' }}>
-              <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: 0.5, display: 'block', marginBottom: 8 }}>
-                👑 Quick Admin Accounts:
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('utpalabhuyan29@gmail.com')}
-                  disabled={isSubmitting}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    borderRadius: 10,
-                    border: '1px solid #bbf7d0',
-                    background: '#f0fdf4',
-                    cursor: 'pointer',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    textAlign: 'left'
-                  }}
-                >
-                  <span>👑 <strong>utpalabhuyan29@gmail.com</strong> (Owner)</span>
-                  <span style={{ color: '#166534', fontSize: 12 }}>→</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('soumarjyotibhuyan@gmail.com')}
-                  disabled={isSubmitting}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    borderRadius: 10,
-                    border: '1px solid #bfdbfe',
-                    background: '#eff6ff',
-                    cursor: 'pointer',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    textAlign: 'left'
-                  }}
-                >
-                  <span>⚡ <strong>soumarjyotibhuyan@gmail.com</strong> (Admin)</span>
-                  <span style={{ color: '#1d4ed8', fontSize: 12 }}>→</span>
-                </button>
-              </div>
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 14, fontSize: 12.5, lineHeight: 1.6, marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: 6 }}>3-Step Setup:</div>
+              <ol style={{ paddingLeft: 18, margin: 0 }}>
+                <li>Go to <strong>Google Cloud Console &gt; APIs &amp; Services &gt; Credentials</strong>.</li>
+                <li>Create an <strong>OAuth 2.0 Web Client ID</strong> with Authorized Origin: <code style={{ background: '#e2e8f0', padding: '2px 4px', borderRadius: 4 }}>https://neroots.vercel.app</code></li>
+                <li>Add <code style={{ background: '#e2e8f0', padding: '2px 4px', borderRadius: 4 }}>NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> to your Vercel project environment variables.</li>
+              </ol>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0' }}>
-              <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }}></div>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Or Customer Email</span>
-              <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }}></div>
-            </div>
-
-            {/* Custom Google Email Form */}
-            <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <input
-                type="email"
-                placeholder="yourname@gmail.com"
-                value={emailInput}
-                onChange={e => setEmailInput(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 14px',
-                  borderRadius: 10,
-                  border: '1px solid var(--border-color)',
-                  fontSize: 14,
-                  background: 'var(--bg-cream)'
-                }}
-                required
-              />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
               <button
-                type="submit"
-                disabled={isSubmitting}
+                type="button"
+                onClick={() => setShowConfigHelp(false)}
                 style={{
                   background: 'var(--primary)',
                   color: '#ffffff',
-                  padding: '12px',
+                  padding: '10px 20px',
                   borderRadius: 'var(--radius-full)',
                   fontWeight: 700,
-                  fontSize: 14,
+                  fontSize: 13,
                   border: 'none',
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                  opacity: isSubmitting ? 0.7 : 1,
-                  boxShadow: '0 2px 8px rgba(217, 37, 37, 0.25)'
+                  cursor: 'pointer'
                 }}
               >
-                {isSubmitting ? 'Signing in...' : 'Sign In as Customer →'}
+                Got It
               </button>
-            </form>
+            </div>
           </div>
         </div>
       )}
