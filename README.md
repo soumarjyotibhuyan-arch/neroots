@@ -107,8 +107,8 @@ Create a `.env.local` file in the root directory:
 ```env
 NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
-ADMIN_EMAILS=soumarjyotibhuyan@gmail.com,utpalabhuyan29@gmail.com
-NEXT_PUBLIC_ADMIN_EMAILS=soumarjyotibhuyan@gmail.com,utpalabhuyan29@gmail.com
+ADMIN_EMAILS=admin@yourdomain.com,owner@yourdomain.com
+NEXT_PUBLIC_ADMIN_EMAILS=admin@yourdomain.com,owner@yourdomain.com
 ```
 
 ### 4. Run Development Server
