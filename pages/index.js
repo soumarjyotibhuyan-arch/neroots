@@ -396,6 +396,14 @@ export default function Home() {
                     </div>
 
                     <h2 className="product-title">{product.name}</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '2px 0 6px 0', fontSize: 12 }}>
+                      <span style={{ color: Number(product.rating) > 0 ? '#d97706' : 'var(--text-muted)', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                        {Number(product.rating) > 0 ? '★' : '☆'} {Number(product.rating) > 0 ? Number(product.rating).toFixed(1) : '0.0'}
+                      </span>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        ({product.reviewCount || 0} {product.reviewCount === 1 ? 'customer review' : 'customer reviews'})
+                      </span>
+                    </div>
                     <p className="product-desc">{product.description}</p>
 
                     {/* Weight Selection Buttons */}

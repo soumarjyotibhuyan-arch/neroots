@@ -141,7 +141,7 @@ export default function Reviews() {
   const totalReviews = reviews.length;
   const avgRating = totalReviews > 0
     ? (reviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / totalReviews).toFixed(2)
-    : '4.95';
+    : '0.0';
 
   const fiveStarCount = reviews.filter(r => Number(r.rating) === 5).length;
   const fourStarCount = reviews.filter(r => Number(r.rating) === 4).length;
@@ -297,7 +297,7 @@ export default function Reviews() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13 }}>
                 <span style={{ width: 50, color: 'var(--text-muted)' }}>5 Star</span>
                 <div style={{ flex: 1, height: 8, background: '#e0d8cc', borderRadius: 4, overflow: 'hidden' }}>
-                  <div style={{ width: `${totalReviews > 0 ? (fiveStarCount / totalReviews) * 100 : 100}%`, height: '100%', background: '#008738' }}></div>
+                  <div style={{ width: `${totalReviews > 0 ? (fiveStarCount / totalReviews) * 100 : 0}%`, height: '100%', background: '#008738' }}></div>
                 </div>
                 <span style={{ width: 24, textAlign: 'right', fontWeight: 600 }}>{fiveStarCount}</span>
               </div>

@@ -1,4 +1,4 @@
-import { getDB, saveDB } from '../../lib/db';
+import { getDB, saveDB, updateProductRatings } from '../../lib/db';
 import { sanitizeObject, sanitizeString, checkRateLimit, validateAdminRequest } from '../../lib/security';
 
 export default function handler(req, res) {
@@ -67,6 +67,7 @@ export default function handler(req, res) {
     };
 
     db.reviews.unshift(newReview);
+    updateProductRatings(db);
     saveDB(db);
 
     return res.status(201).json(newReview);
@@ -83,6 +84,7 @@ export default function handler(req, res) {
     if (!id) return res.status(400).json({ error: 'Review ID required' });
 
     db.reviews = db.reviews.filter(r => String(r.id) !== String(id));
+    updateProductRatings(db);
     saveDB(db);
 
     return res.status(200).json({ success: true, reviews: db.reviews });
