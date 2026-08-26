@@ -19,6 +19,7 @@ export default function Checkout() {
   const [city, setCity] = useState('');
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('UPI / Online Paid');
+  const [customerUPI, setCustomerUPI] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [couponApplied, setCouponApplied] = useState('');
@@ -190,7 +191,8 @@ export default function Checkout() {
           prefill: {
             name: name.trim(),
             email: email.trim() || (user?.email || ''),
-            contact: phone.trim()
+            contact: phone.trim(),
+            vpa: customerUPI.trim() || undefined
           },
           theme: {
             color: '#e62b2b'
@@ -239,14 +241,16 @@ export default function Checkout() {
         });
         rzp.open();
       } else {
-        // Multi-Channel Payment Modal (Cards, NetBanking, UPI Apps, QR)
+        // Multi-Channel Payment Modal (UPI ID, Apps, Cards, NetBanking, QR)
         setPendingPaymentOrder({
           orderId: orderData.storeOrderId,
           gatewayOrderId: orderData.order_id || orderData.orderId,
           amountRupees: orderData.amountRupees,
           customerName: name.trim(),
           customerPhone: phone.trim(),
-          initialTab: paymentMethod === 'Cards & E-Banking' ? 'card' : 'intent'
+          customerEmail: email.trim() || (user?.email || ''),
+          initialCustomerUPI: customerUPI.trim(),
+          initialTab: paymentMethod === 'Cards & E-Banking' ? 'card' : 'vpa'
         });
         setIsUPIModalOpen(true);
       }
@@ -667,12 +671,61 @@ export default function Checkout() {
                       />
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span>⚡ Instant UPI &amp; Wallets</span>
+                          <span>⚡ Instant UPI ID, Apps &amp; Wallets</span>
                           <span style={{ fontSize: 11, background: '#dcfce7', color: '#15803d', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Recommended</span>
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Google Pay, PhonePe, Paytm, CRED, BHIM &amp; QR (Instant Auto-Verification)</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>UPI ID (VPA Collect), Google Pay, PhonePe, Paytm, CRED, BHIM (Razorpay Gateway)</div>
                       </div>
                     </label>
+
+                    {/* Inline Customer UPI ID Input */}
+                    {paymentMethod === 'UPI / Online Paid' && (
+                      <div style={{ padding: 14, background: '#f8fafc', borderRadius: 10, border: '1px solid #cbd5e1', marginTop: -4, marginBottom: 4 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                          <label style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
+                            ENTER YOUR UPI ID / VPA (OPTIONAL):
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setCustomerUPI('test@razorpay')}
+                            style={{
+                              background: '#eff6ff',
+                              border: '1px solid #bfdbfe',
+                              borderRadius: 4,
+                              padding: '2px 8px',
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: '#1d4ed8',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ⚡ Fill test@razorpay
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="e.g. username@okhdfcbank or test@razorpay"
+                          value={customerUPI}
+                          onChange={e => setCustomerUPI(e.target.value.trim())}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13 }}
+                        />
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                          {['@okaxis', '@okhdfcbank', '@okicici', '@paytm', '@ybl'].map(handle => (
+                            <button
+                              key={handle}
+                              type="button"
+                              onClick={() => {
+                                const base = customerUPI.split('@')[0] || 'user';
+                                setCustomerUPI(`${base}${handle}`);
+                              }}
+                              style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '2px 6px', borderRadius: 4, fontSize: 10, color: '#475569', cursor: 'pointer' }}
+                            >
+                              {handle}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Option 2: Cards & E-Banking / NetBanking */}
                     <label
@@ -874,7 +927,7 @@ export default function Checkout() {
         )}
       </main>
 
-      {/* Multi-Channel Payment Gateway Modal (Cards, E-Banking, UPI Apps, QR) */}
+      {/* Multi-Channel Payment Gateway Modal (UPI ID, Apps, Cards, E-Banking, QR) */}
       {pendingPaymentOrder && (
         <DynamicUPIQRModal
           isOpen={isUPIModalOpen}
@@ -884,7 +937,9 @@ export default function Checkout() {
           gatewayOrderId={pendingPaymentOrder.gatewayOrderId}
           customerName={pendingPaymentOrder.customerName}
           customerPhone={pendingPaymentOrder.customerPhone}
-          initialTab={pendingPaymentOrder.initialTab || 'card'}
+          customerEmail={pendingPaymentOrder.customerEmail || email.trim() || user?.email || ''}
+          initialCustomerUPI={pendingPaymentOrder.initialCustomerUPI || customerUPI}
+          initialTab={pendingPaymentOrder.initialTab || 'vpa'}
           isMobile={isMobile}
           onPaymentSuccess={(confirmedOrder) => {
             setIsUPIModalOpen(false);

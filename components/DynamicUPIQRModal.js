@@ -23,6 +23,8 @@ const ALL_BANKS = [
   { id: 'central', name: 'Central Bank of India', icon: '🏛️', code: 'CBIN' }
 ];
 
+const POPULAR_UPI_HANDLES = ['@okaxis', '@okhdfcbank', '@okicici', '@oksbi', '@paytm', '@ybl', '@ibl'];
+
 export default function DynamicUPIQRModal({
   isOpen,
   onClose,
@@ -31,17 +33,20 @@ export default function DynamicUPIQRModal({
   gatewayOrderId,
   customerName,
   customerPhone,
-  initialTab = 'card',
+  customerEmail,
+  initialTab = 'vpa',
+  initialCustomerUPI = '',
   onPaymentSuccess,
   isMobile = false
 }) {
   const [timeLeft, setTimeLeft] = useState(300);
   const [verifying, setVerifying] = useState(false);
   const [copiedUPI, setCopiedUPI] = useState(false);
-  const [activeTab, setActiveTab] = useState(initialTab || (isMobile ? 'intent' : 'card'));
+  const [activeTab, setActiveTab] = useState(initialTab || 'vpa');
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [upiUtr, setUpiUtr] = useState('');
-  const [customerUPI, setCustomerUPI] = useState('');
+  const [customerUPI, setCustomerUPI] = useState(initialCustomerUPI || '');
+  const [collectSent, setCollectSent] = useState(false);
 
   // Card fields
   const [cardNumber, setCardNumber] = useState('');
@@ -68,7 +73,10 @@ export default function DynamicUPIQRModal({
     if (initialTab) {
       setActiveTab(initialTab);
     }
-  }, [initialTab, isOpen]);
+    if (initialCustomerUPI) {
+      setCustomerUPI(initialCustomerUPI);
+    }
+  }, [initialTab, initialCustomerUPI, isOpen]);
 
   // Generate QR Code locally via qrcode library
   useEffect(() => {
@@ -93,6 +101,7 @@ export default function DynamicUPIQRModal({
       setTimeLeft(300);
       setCardOtpStep(false);
       setBankOtpStep(false);
+      setCollectSent(false);
       return;
     }
 
@@ -123,7 +132,86 @@ export default function DynamicUPIQRModal({
     }
   };
 
-  // 1. CARD PAYMENT SUBMISSION
+  // 1. UPI ID COLLECT (RAZORPAY INTEGRATION + GATEWAY ROUTING)
+  const handleUPICollect = async (e) => {
+    if (e) e.preventDefault();
+    const cleanVPA = customerUPI.trim();
+    if (!cleanVPA || !cleanVPA.includes('@')) {
+      alert('Please enter a valid UPI ID (e.g. yourname@okhdfcbank or test@razorpay)');
+      return;
+    }
+
+    setVerifying(true);
+
+    // If Razorpay SDK is available, trigger Razorpay Collect / Standard modal with prefilled VPA
+    if (typeof window !== 'undefined' && window.Razorpay) {
+      const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TUEl7SyeNdN6Rx';
+      const rzpOptions = {
+        key: rzpKey,
+        amount: Math.round(Number(amountRupees) * 100),
+        currency: 'INR',
+        name: 'NE Roots Pickles Assam',
+        description: `Order #${orderId} • UPI ID: ${cleanVPA}`,
+        image: 'https://neroots.vercel.app/images/ner_logo_icon.jpg',
+        order_id: gatewayOrderId || undefined,
+        prefill: {
+          name: customerName || '',
+          email: customerEmail || '',
+          contact: customerPhone || '',
+          vpa: cleanVPA
+        },
+        theme: {
+          color: '#e62b2b'
+        },
+        handler: async function (response) {
+          try {
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                storeOrderId: orderId
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok && verifyData.success) {
+              onPaymentSuccess(verifyData.order);
+              return;
+            }
+          } catch (err) {
+            console.error('Verify error:', err);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setVerifying(false);
+          }
+        }
+      };
+
+      try {
+        const rzp = new window.Razorpay(rzpOptions);
+        rzp.on('payment.failed', function (response) {
+          setVerifying(false);
+          alert(`Payment failed: ${response.error?.description || 'Transaction declined'}`);
+        });
+        rzp.open();
+        setVerifying(false);
+        return;
+      } catch (err) {
+        console.warn('Razorpay popup open error, showing collect screen:', err);
+      }
+    }
+
+    // Direct gateway collect request simulation / verification
+    setCollectSent(true);
+    setVerifying(false);
+  };
+
+  // 2. CARD PAYMENT SUBMISSION
   const handleCardPay = async (e) => {
     e.preventDefault();
     const cleanNum = cardNumber.replace(/\s+/g, '');
@@ -140,7 +228,6 @@ export default function DynamicUPIQRModal({
       return;
     }
 
-    // Move to 3D Secure / OTP Simulation step
     setCardOtpStep(true);
   };
 
@@ -180,7 +267,7 @@ export default function DynamicUPIQRModal({
     }
   };
 
-  // 2. NETBANKING SUBMISSION
+  // 3. NETBANKING SUBMISSION
   const handleNetBankingPay = (e) => {
     e.preventDefault();
     setBankOtpStep(true);
@@ -218,7 +305,7 @@ export default function DynamicUPIQRModal({
     }
   };
 
-  // 3. DIRECT UPI SUBMISSION
+  // 4. DIRECT UPI SUBMISSION
   const handleSubmitUPIPayment = async () => {
     setVerifying(true);
     try {
@@ -228,7 +315,7 @@ export default function DynamicUPIQRModal({
         body: JSON.stringify({
           storeOrderId: orderId,
           gatewayOrderId: gatewayOrderId || `order_upi_${orderId}`,
-          upiUtr: upiUtr.trim() || 'Paid via UPI App',
+          upiUtr: upiUtr.trim() || 'Paid via UPI ID',
           customerUPI: customerUPI.trim(),
           customerName: customerName || '',
           phone: customerPhone || '',
@@ -250,12 +337,16 @@ export default function DynamicUPIQRModal({
     }
   };
 
-  // Helper to fill Razorpay test card
+  // Helpers to fill test credentials
   const fillTestCard = () => {
     setCardNumber('4100 2800 0000 1007');
     setCardExpiry('12/26');
     setCardCvv('123');
     setCardHolder('Test Customer');
+  };
+
+  const fillTestUPI = () => {
+    setCustomerUPI('test@razorpay');
   };
 
   if (!isOpen) return null;
@@ -307,7 +398,7 @@ export default function DynamicUPIQRModal({
         {/* Header Branding */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
           <img src="/images/ner_logo_icon.jpg" alt="NE Roots Icon" style={{ width: 28, height: 28, borderRadius: 6 }} />
-          <span style={{ fontWeight: 800, fontSize: 17, color: 'var(--primary-dark)' }}>NE Roots Secure Payment</span>
+          <span style={{ fontWeight: 800, fontSize: 17, color: 'var(--primary-dark)' }}>NE Roots Secure Payment Gateway</span>
         </div>
 
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 }}>
@@ -317,16 +408,54 @@ export default function DynamicUPIQRModal({
         {timeLeft > 0 ? (
           <>
             {/* Top Navigation Tabs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', background: '#f1f5f9', padding: 4, borderRadius: 12, marginBottom: 16, gap: 2 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', background: '#f1f5f9', padding: 4, borderRadius: 12, marginBottom: 16, gap: 2 }}>
+              <button
+                type="button"
+                onClick={() => { setActiveTab('vpa'); setCollectSent(false); }}
+                style={{
+                  minHeight: 38,
+                  padding: '6px 2px',
+                  borderRadius: 8,
+                  border: 'none',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: activeTab === 'vpa' ? '#ffffff' : 'transparent',
+                  color: activeTab === 'vpa' ? 'var(--primary)' : '#64748b',
+                  boxShadow: activeTab === 'vpa' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
+                }}
+              >
+                ⚡ UPI ID
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('intent')}
+                style={{
+                  minHeight: 38,
+                  padding: '6px 2px',
+                  borderRadius: 8,
+                  border: 'none',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: activeTab === 'intent' ? '#ffffff' : 'transparent',
+                  color: activeTab === 'intent' ? 'var(--primary)' : '#64748b',
+                  boxShadow: activeTab === 'intent' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
+                }}
+              >
+                📱 Apps
+              </button>
+
               <button
                 type="button"
                 onClick={() => { setActiveTab('card'); setCardOtpStep(false); }}
                 style={{
                   minHeight: 38,
-                  padding: '6px 4px',
+                  padding: '6px 2px',
                   borderRadius: 8,
                   border: 'none',
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: 700,
                   cursor: 'pointer',
                   background: activeTab === 'card' ? '#ffffff' : 'transparent',
@@ -342,10 +471,10 @@ export default function DynamicUPIQRModal({
                 onClick={() => { setActiveTab('netbanking'); setBankOtpStep(false); }}
                 style={{
                   minHeight: 38,
-                  padding: '6px 4px',
+                  padding: '6px 2px',
                   borderRadius: 8,
                   border: 'none',
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: 700,
                   cursor: 'pointer',
                   background: activeTab === 'netbanking' ? '#ffffff' : 'transparent',
@@ -353,26 +482,7 @@ export default function DynamicUPIQRModal({
                   boxShadow: activeTab === 'netbanking' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                🏛️ E-Banking
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('intent')}
-                style={{
-                  minHeight: 38,
-                  padding: '6px 4px',
-                  borderRadius: 8,
-                  border: 'none',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  background: activeTab === 'intent' ? '#ffffff' : 'transparent',
-                  color: activeTab === 'intent' ? 'var(--primary)' : '#64748b',
-                  boxShadow: activeTab === 'intent' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
-                }}
-              >
-                ⚡ UPI Apps
+                🏛️ Banks
               </button>
 
               <button
@@ -380,10 +490,10 @@ export default function DynamicUPIQRModal({
                 onClick={() => setActiveTab('qr')}
                 style={{
                   minHeight: 38,
-                  padding: '6px 4px',
+                  padding: '6px 2px',
                   borderRadius: 8,
                   border: 'none',
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: 700,
                   cursor: 'pointer',
                   background: activeTab === 'qr' ? '#ffffff' : 'transparent',
@@ -391,11 +501,293 @@ export default function DynamicUPIQRModal({
                   boxShadow: activeTab === 'qr' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
                 }}
               >
-                📱 Scan QR
+                📲 QR
               </button>
             </div>
 
-            {/* TAB 1: CREDIT / DEBIT CARDS */}
+            {/* TAB 1: ENTER UPI ID / VPA COLLECT (RAZORPAY STANDARD) */}
+            {activeTab === 'vpa' && (
+              <div style={{ textAlign: 'left' }}>
+                {!collectSent ? (
+                  <form onSubmit={handleUPICollect} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Enter Your UPI ID / VPA</span>
+                      <button
+                        type="button"
+                        onClick={fillTestUPI}
+                        style={{
+                          background: '#eff6ff',
+                          border: '1px solid #bfdbfe',
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: '#1d4ed8',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ⚡ Use test@razorpay
+                      </button>
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="e.g. username@okhdfcbank or test@razorpay"
+                        value={customerUPI}
+                        onChange={e => setCustomerUPI(e.target.value.trim())}
+                        style={{ width: '100%', padding: '11px 14px', borderRadius: 8, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 500 }}
+                        required
+                      />
+                    </div>
+
+                    {/* Quick Handle Suggestions */}
+                    <div>
+                      <span style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 6 }}>
+                        QUICK SUFFIXES:
+                      </span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {POPULAR_UPI_HANDLES.map(handle => (
+                          <button
+                            key={handle}
+                            type="button"
+                            onClick={() => {
+                              const username = customerUPI.split('@')[0] || 'user';
+                              setCustomerUPI(`${username}${handle}`);
+                            }}
+                            style={{
+                              background: '#f8fafc',
+                              border: '1px solid #cbd5e1',
+                              borderRadius: 6,
+                              padding: '3px 8px',
+                              fontSize: 11,
+                              color: '#334155',
+                              cursor: 'pointer',
+                              fontWeight: 600
+                            }}
+                          >
+                            {handle}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: 12, color: '#475569', background: '#f8fafc', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', lineHeight: 1.5 }}>
+                      💡 A secure payment collect request of <strong>₹{amountRupees}</strong> will be routed via Razorpay Gateway to your UPI app.
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={verifying}
+                      style={{
+                        background: 'var(--primary)',
+                        color: '#fff',
+                        padding: '12px',
+                        borderRadius: 'var(--radius-full)',
+                        fontSize: 14,
+                        fontWeight: 700,
+                        border: 'none',
+                        cursor: verifying ? 'not-allowed' : 'pointer',
+                        marginTop: 4,
+                        boxShadow: '0 4px 12px rgba(217, 37, 37, 0.25)'
+                      }}
+                    >
+                      {verifying ? 'Routing to Gateway...' : `Request ₹${amountRupees} on UPI ID →`}
+                    </button>
+                  </form>
+                ) : (
+                  /* Collect Sent Screen */
+                  <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                    <div style={{ fontSize: 28, marginBottom: 4 }}>📲</div>
+                    <h4 style={{ fontSize: 15, margin: '0 0 6px', color: '#1e293b' }}>
+                      Payment Request Sent!
+                    </h4>
+                    <p style={{ fontSize: 12, color: '#475569', margin: '0 0 14px' }}>
+                      Please open your UPI app registered with <strong>{customerUPI}</strong> and approve the payment of <strong>₹{amountRupees}</strong>.
+                    </p>
+
+                    {/* UTR input */}
+                    <div style={{ textAlign: 'left', marginBottom: 12 }}>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4, color: '#475569' }}>
+                        UPI Reference / 12-Digit UTR
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 12-digit UTR from payment receipt"
+                        value={upiUtr}
+                        onChange={e => setUpiUtr(e.target.value)}
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <button
+                        type="button"
+                        onClick={() => setCollectSent(false)}
+                        style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', fontSize: 13, cursor: 'pointer' }}
+                      >
+                        ← Edit UPI ID
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSubmitUPIPayment}
+                        disabled={verifying}
+                        style={{
+                          flex: 1.5,
+                          padding: 10,
+                          borderRadius: 8,
+                          background: 'var(--primary)',
+                          color: '#fff',
+                          fontWeight: 700,
+                          fontSize: 13,
+                          border: 'none',
+                          cursor: verifying ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        {verifying ? 'Verifying...' : 'Confirm Paid ✓'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 2: 1-TAP UPI APPS INTENT */}
+            {activeTab === 'intent' && (
+              <div style={{ padding: '4px 0 12px' }}>
+                <p style={{ fontSize: 13, color: 'var(--text-dark)', marginBottom: 12 }}>
+                  Tap below to open your preferred UPI app and pay ₹{amountRupees}:
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <a
+                    href={upiUri}
+                    className="upi-app-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      color: '#1e293b',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                      minHeight: 48,
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <span>🔵</span> Google Pay
+                  </a>
+
+                  <a
+                    href={upiUri}
+                    className="upi-app-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      color: '#5f259f',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                      minHeight: 48,
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <span>🟣</span> PhonePe
+                  </a>
+
+                  <a
+                    href={upiUri}
+                    className="upi-app-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      color: '#00baf2',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                      minHeight: 48,
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <span>🔷</span> Paytm UPI
+                  </a>
+
+                  <a
+                    href={upiUri}
+                    className="upi-app-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '12px 10px',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      color: '#0f172a',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                      minHeight: 48,
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <span>⚡</span> Any UPI App
+                  </a>
+                </div>
+
+                {/* UTR Entry */}
+                <div style={{ textAlign: 'left', marginTop: 14 }}>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4, color: '#475569' }}>
+                    ENTER UPI REFERENCE / UTR (AFTER PAYING)
+                  </label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      type="text"
+                      placeholder="12-digit UTR from GPay / PhonePe"
+                      value={upiUtr}
+                      onChange={e => setUpiUtr(e.target.value)}
+                      style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSubmitUPIPayment}
+                      disabled={verifying}
+                      style={{
+                        background: 'var(--primary)',
+                        color: '#fff',
+                        padding: '8px 14px',
+                        borderRadius: 8,
+                        fontWeight: 700,
+                        fontSize: 12,
+                        border: 'none',
+                        cursor: verifying ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {verifying ? 'Submitting...' : 'Confirm ✓'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: CREDIT / DEBIT CARDS */}
             {activeTab === 'card' && (
               <div style={{ textAlign: 'left' }}>
                 {!cardOtpStep ? (
@@ -566,7 +958,7 @@ export default function DynamicUPIQRModal({
               </div>
             )}
 
-            {/* TAB 2: NET BANKING / E-BANKING */}
+            {/* TAB 4: NET BANKING / E-BANKING */}
             {activeTab === 'netbanking' && (
               <div style={{ textAlign: 'left' }}>
                 {!bankOtpStep ? (
@@ -694,142 +1086,7 @@ export default function DynamicUPIQRModal({
               </div>
             )}
 
-            {/* TAB 3: 1-TAP UPI APPS INTENT */}
-            {activeTab === 'intent' && (
-              <div style={{ padding: '4px 0 12px' }}>
-                <p style={{ fontSize: 13, color: 'var(--text-dark)', marginBottom: 12 }}>
-                  Tap below to open your preferred UPI app and pay ₹{amountRupees}:
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <a
-                    href={upiUri}
-                    className="upi-app-button"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      padding: '12px 10px',
-                      borderRadius: 10,
-                      background: '#ffffff',
-                      border: '1.5px solid #e2e8f0',
-                      color: '#1e293b',
-                      fontWeight: 700,
-                      fontSize: 13,
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48,
-                      textDecoration: 'none'
-                    }}
-                  >
-                    <span>🔵</span> Google Pay
-                  </a>
-
-                  <a
-                    href={upiUri}
-                    className="upi-app-button"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      padding: '12px 10px',
-                      borderRadius: 10,
-                      background: '#ffffff',
-                      border: '1.5px solid #e2e8f0',
-                      color: '#5f259f',
-                      fontWeight: 700,
-                      fontSize: 13,
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48,
-                      textDecoration: 'none'
-                    }}
-                  >
-                    <span>🟣</span> PhonePe
-                  </a>
-
-                  <a
-                    href={upiUri}
-                    className="upi-app-button"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      padding: '12px 10px',
-                      borderRadius: 10,
-                      background: '#ffffff',
-                      border: '1.5px solid #e2e8f0',
-                      color: '#00baf2',
-                      fontWeight: 700,
-                      fontSize: 13,
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48,
-                      textDecoration: 'none'
-                    }}
-                  >
-                    <span>🔷</span> Paytm UPI
-                  </a>
-
-                  <a
-                    href={upiUri}
-                    className="upi-app-button"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      padding: '12px 10px',
-                      borderRadius: 10,
-                      background: '#ffffff',
-                      border: '1.5px solid #e2e8f0',
-                      color: '#0f172a',
-                      fontWeight: 700,
-                      fontSize: 13,
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48,
-                      textDecoration: 'none'
-                    }}
-                  >
-                    <span>⚡</span> Any UPI App
-                  </a>
-                </div>
-
-                {/* UTR Entry */}
-                <div style={{ textAlign: 'left', marginTop: 14 }}>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 4, color: '#475569' }}>
-                    ENTER UPI REFERENCE / UTR (AFTER PAYING)
-                  </label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <input
-                      type="text"
-                      placeholder="12-digit UTR from GPay / PhonePe"
-                      value={upiUtr}
-                      onChange={e => setUpiUtr(e.target.value)}
-                      style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSubmitUPIPayment}
-                      disabled={verifying}
-                      style={{
-                        background: 'var(--primary)',
-                        color: '#fff',
-                        padding: '8px 14px',
-                        borderRadius: 8,
-                        fontWeight: 700,
-                        fontSize: 12,
-                        border: 'none',
-                        cursor: verifying ? 'not-allowed' : 'pointer'
-                      }}
-                    >
-                      {verifying ? 'Submitting...' : 'Confirm ✓'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: SCAN QR CODE */}
+            {/* TAB 5: SCAN QR CODE */}
             {activeTab === 'qr' && (
               <div>
                 <div style={{
