@@ -33,15 +33,51 @@ export default function Reviews() {
   ];
 
   useEffect(() => {
+    // 1. Instant local storage hydration (zero wait for updates made in admin on this browser)
+    try {
+      const savedReviews = localStorage.getItem('neroots_custom_reviews');
+      if (savedReviews) {
+        const parsed = JSON.parse(savedReviews);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setReviews(parsed);
+        }
+      }
+    } catch (e) {}
+
     fetchReviews();
+
+    // 2. Real-time updates when admin edits data in another tab or same window
+    const handleUpdate = () => {
+      fetchReviews();
+    };
+
+    window.addEventListener('neroots_data_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    let bc = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('neroots_sync_channel');
+        bc.onmessage = () => fetchReviews();
+      } catch (e) {}
+    }
+
+    return () => {
+      window.removeEventListener('neroots_data_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      if (bc) bc.close();
+    };
   }, []);
 
   const fetchReviews = async () => {
     try {
-      const res = await fetch('/api/reviews');
+      const res = await fetch(`/api/reviews?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        setReviews(data);
+        if (Array.isArray(data)) {
+          setReviews(data);
+          try { localStorage.setItem('neroots_custom_reviews', JSON.stringify(data)); } catch (e) {}
+        }
       }
     } catch (err) {
       console.error(err);

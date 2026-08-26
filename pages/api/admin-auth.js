@@ -3,6 +3,11 @@ import { verifyGoogleIdToken } from '../../lib/googleAuth';
 import { sanitizeObject, sanitizeString, checkRateLimit, registerAdminSession, validateAdminRequest } from '../../lib/security';
 
 export default async function handler(req, res) {
+  // Anti-cache headers
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   // 1. Anti-Brute-Force Rate Limiting (Max 15 auth requests per minute)
   if (!checkRateLimit(req, res, { max: 15, windowMs: 60000, keyPrefix: 'admin_auth' })) {
     return;

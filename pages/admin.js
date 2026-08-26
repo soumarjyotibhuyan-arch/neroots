@@ -179,6 +179,21 @@ export default function Admin() {
     performGoogleAuth({ email: googleEmailInput.trim() });
   };
 
+  const notifyDataSync = (type, data) => {
+    try {
+      if (type === 'team' && data) localStorage.setItem('neroots_custom_team', JSON.stringify(data));
+      if (type === 'story' && data) localStorage.setItem('neroots_company_story', JSON.stringify(data));
+      if (type === 'products' && data) localStorage.setItem('neroots_custom_products', JSON.stringify(data));
+      if (type === 'reviews' && data) localStorage.setItem('neroots_custom_reviews', JSON.stringify(data));
+      window.dispatchEvent(new CustomEvent('neroots_data_updated', { detail: { type } }));
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('neroots_sync_channel');
+        bc.postMessage({ type, timestamp: Date.now() });
+        bc.close();
+      }
+    } catch (e) {}
+  };
+
   const loadData = async (tokenOverride) => {
     const token = tokenOverride || getAuthToken();
     try {
@@ -187,12 +202,13 @@ export default function Admin() {
         'Authorization': `Bearer ${token}`
       };
 
+      const now = Date.now();
       const [pRes, oRes, aRes, tRes, rRes] = await Promise.all([
-        fetch('/api/products'),
-        fetch('/api/orders', { headers: authHeaders }),
-        fetch('/api/admin-auth', { headers: authHeaders }),
-        fetch('/api/team'),
-        fetch('/api/reviews')
+        fetch(`/api/products?_t=${now}`, { cache: 'no-store' }),
+        fetch(`/api/orders?_t=${now}`, { headers: authHeaders, cache: 'no-store' }),
+        fetch(`/api/admin-auth?_t=${now}`, { headers: authHeaders, cache: 'no-store' }),
+        fetch(`/api/team?_t=${now}`, { cache: 'no-store' }),
+        fetch(`/api/reviews?_t=${now}`, { cache: 'no-store' })
       ]);
 
       if (oRes.status === 401 || aRes.status === 401) {
@@ -207,17 +223,27 @@ export default function Admin() {
       const tData = await tRes.json();
       const rData = await rRes.json();
 
-      setProducts(Array.isArray(pData) ? pData : []);
+      const freshProducts = Array.isArray(pData) ? pData : [];
+      const freshTeam = Array.isArray(tData.team) ? tData.team : [];
+      const freshReviews = Array.isArray(rData) ? rData : [];
+
+      setProducts(freshProducts);
       setOrders(Array.isArray(oData) ? oData : []);
       setAdminTeam(Array.isArray(aData.admins) ? aData.admins : []);
-      setTeamMembers(Array.isArray(tData.team) ? tData.team : []);
+      setTeamMembers(freshTeam);
       if (tData.companyStory) {
         setCompanyStory(tData.companyStory);
         setStoryHeadline(tData.companyStory.headline || '');
         setStoryNarrative(tData.companyStory.narrative || '');
         setStoryMission(tData.companyStory.mission || '');
       }
-      setCustomerReviews(Array.isArray(rData) ? rData : []);
+      setCustomerReviews(freshReviews);
+
+      // Sync to local storage
+      notifyDataSync('team', freshTeam);
+      if (tData.companyStory) notifyDataSync('story', tData.companyStory);
+      notifyDataSync('products', freshProducts);
+      notifyDataSync('reviews', freshReviews);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -263,7 +289,9 @@ export default function Admin() {
         setMemberName('');
         setMemberRole('');
         setMemberBio('');
-        setTeamMembers(data.team || []);
+        const updatedTeam = data.team || [];
+        setTeamMembers(updatedTeam);
+        notifyDataSync('team', updatedTeam);
       } else {
         showToast(`❌ ${data.error || 'Failed to add team member'}`);
       }
@@ -285,7 +313,9 @@ export default function Admin() {
       const data = await res.json();
       if (res.ok && data.success) {
         showToast('🗑️ Team member removed.');
-        setTeamMembers(data.team || []);
+        const updatedTeam = data.team || [];
+        setTeamMembers(updatedTeam);
+        notifyDataSync('team', updatedTeam);
       } else {
         showToast(`❌ ${data.error || 'Failed to delete team member'}`);
       }
@@ -312,7 +342,9 @@ export default function Admin() {
       const data = await res.json();
       if (res.ok && data.success) {
         showToast('✅ Company story & mission updated live on /team!');
-        setCompanyStory(data.companyStory || {});
+        const updatedStory = data.companyStory || {};
+        setCompanyStory(updatedStory);
+        notifyDataSync('story', updatedStory);
       } else {
         showToast(`❌ ${data.error || 'Failed to update company story'}`);
       }
@@ -335,9 +367,11 @@ export default function Admin() {
       const data = await res.json();
       if (res.ok && data.success) {
         showToast('🗑️ Customer review deleted.');
-        setCustomerReviews(data.reviews || []);
+        const updatedReviews = data.reviews || customerReviews.filter(r => String(r.id) !== String(reviewId));
+        setCustomerReviews(updatedReviews);
+        notifyDataSync('reviews', updatedReviews);
       } else {
-        showToast('❌ Failed to delete review.');
+        showToast(`❌ ${data.error || 'Failed to delete review.'}`);
       }
     } catch (err) {
       console.error(err);
@@ -505,7 +539,11 @@ export default function Admin() {
       if (res.ok) {
         const updated = await res.json();
         showToast('✅ Pickle catalog details updated!');
-        setProducts(prev => prev.map(p => String(p.id) === String(updated.id) ? updated : p));
+        setProducts(prev => {
+          const updatedList = prev.map(p => String(p.id) === String(updated.id) ? updated : p);
+          notifyDataSync('products', updatedList);
+          return updatedList;
+        });
         setEditingProduct(null);
       } else {
         showToast('❌ Failed to update pickle.');
@@ -541,7 +579,9 @@ export default function Admin() {
       const data = await res.json();
       if (res.ok && data.success) {
         showToast('✅ Team member profile updated live on /team!');
-        setTeamMembers(data.team || []);
+        const updatedTeam = data.team || [];
+        setTeamMembers(updatedTeam);
+        notifyDataSync('team', updatedTeam);
         setEditingTeamMember(null);
       } else {
         showToast(`❌ ${data.error || 'Failed to update team member'}`);
@@ -562,7 +602,11 @@ export default function Admin() {
       });
       if (res.ok) {
         showToast('🗑️ Pickle removed from catalog.');
-        setProducts(prev => prev.filter(p => p.id !== productId));
+        setProducts(prev => {
+          const updatedList = prev.filter(p => p.id !== productId);
+          notifyDataSync('products', updatedList);
+          return updatedList;
+        });
       } else {
         showToast('❌ Failed to delete.');
       }

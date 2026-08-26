@@ -26,21 +26,59 @@ export default function Home() {
   const categories = ['All', 'Fiery North East', 'Tangy & Aromatic', 'Garlic & Herbs', 'Sweet & Tangy', 'Regional Specials'];
 
   useEffect(() => {
+    // 1. Instant local storage hydration (zero wait for updates made in admin on this browser)
+    try {
+      const savedProducts = localStorage.getItem('neroots_custom_products');
+      if (savedProducts) {
+        const parsed = JSON.parse(savedProducts);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setProducts(parsed);
+          const initialWeights = {};
+          parsed.forEach(p => { initialWeights[p.id] = '250g'; });
+          setSelectedWeights(initialWeights);
+        }
+      }
+    } catch (e) {}
+
     fetchProducts();
+
+    // 2. Real-time updates when admin edits data in another tab or same window
+    const handleUpdate = () => {
+      fetchProducts();
+    };
+
+    window.addEventListener('neroots_data_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    let bc = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('neroots_sync_channel');
+        bc.onmessage = () => fetchProducts();
+      } catch (e) {}
+    }
+
+    return () => {
+      window.removeEventListener('neroots_data_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      if (bc) bc.close();
+    };
   }, []);
 
   const fetchProducts = async () => {
     try {
-      setLoading(true);
-      const res = await fetch('/api/products');
+      const res = await fetch(`/api/products?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
-      setProducts(data);
+      if (Array.isArray(data)) {
+        setProducts(data);
+        try { localStorage.setItem('neroots_custom_products', JSON.stringify(data)); } catch (e) {}
 
-      const initialWeights = {};
-      data.forEach(p => {
-        initialWeights[p.id] = '250g';
-      });
-      setSelectedWeights(initialWeights);
+        const initialWeights = {};
+        data.forEach(p => {
+          initialWeights[p.id] = '250g';
+        });
+        setSelectedWeights(prev => ({ ...initialWeights, ...prev }));
+      }
     } catch (err) {
       console.error('Failed to fetch products:', err);
     } finally {

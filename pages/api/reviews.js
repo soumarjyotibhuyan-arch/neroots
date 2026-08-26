@@ -2,6 +2,11 @@ import { getDB, saveDB } from '../../lib/db';
 import { sanitizeObject, sanitizeString, checkRateLimit, validateAdminRequest } from '../../lib/security';
 
 export default function handler(req, res) {
+  // Anti-cache headers for instantaneous fresh data on storefront
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   const db = getDB();
   db.reviews = db.reviews || [];
 

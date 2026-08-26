@@ -2,6 +2,11 @@ import { getDB, saveDB } from '../../lib/db';
 import { sanitizeObject, sanitizeString, checkRateLimit, validateAdminRequest } from '../../lib/security';
 
 export default function handler(req, res) {
+  // Anti-cache headers for instantaneous fresh data on storefront
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   const db = getDB();
   db.team = db.team || [];
   db.companyStory = db.companyStory || {};
@@ -44,7 +49,7 @@ export default function handler(req, res) {
     db.team.push(newMember);
     saveDB(db);
 
-    return res.status(201).json({ success: true, team: db.team, newMember });
+    return res.status(201).json({ success: true, team: db.team, companyStory: db.companyStory, newMember });
   }
 
   // -------------------------------------------------------------
@@ -65,7 +70,7 @@ export default function handler(req, res) {
           : (db.companyStory.commitments || [])
       };
       saveDB(db);
-      return res.status(200).json({ success: true, companyStory: db.companyStory });
+      return res.status(200).json({ success: true, companyStory: db.companyStory, team: db.team });
     }
 
     // Case B: Update Team Member
@@ -88,7 +93,7 @@ export default function handler(req, res) {
     };
 
     saveDB(db);
-    return res.status(200).json({ success: true, team: db.team });
+    return res.status(200).json({ success: true, team: db.team, companyStory: db.companyStory });
   }
 
   // -------------------------------------------------------------
@@ -101,7 +106,7 @@ export default function handler(req, res) {
     db.team = db.team.filter(m => String(m.id) !== String(id));
     saveDB(db);
 
-    return res.status(200).json({ success: true, team: db.team });
+    return res.status(200).json({ success: true, team: db.team, companyStory: db.companyStory });
   }
 
   res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);

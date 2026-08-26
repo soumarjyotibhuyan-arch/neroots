@@ -12,16 +12,52 @@ export default function Team() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Instant local storage hydration (zero wait for updates made in admin on this browser)
+    try {
+      const savedTeam = localStorage.getItem('neroots_custom_team');
+      const savedStory = localStorage.getItem('neroots_company_story');
+      if (savedTeam) setTeam(JSON.parse(savedTeam));
+      if (savedStory) setCompanyStory(JSON.parse(savedStory));
+    } catch (e) {}
+
     fetchTeamData();
+
+    // 2. Real-time updates when admin edits data in another tab or same window
+    const handleUpdate = () => {
+      fetchTeamData();
+    };
+
+    window.addEventListener('neroots_data_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    let bc = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('neroots_sync_channel');
+        bc.onmessage = () => fetchTeamData();
+      } catch (e) {}
+    }
+
+    return () => {
+      window.removeEventListener('neroots_data_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      if (bc) bc.close();
+    };
   }, []);
 
   const fetchTeamData = async () => {
     try {
-      const res = await fetch('/api/team');
+      const res = await fetch(`/api/team?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        setTeam(data.team || []);
-        setCompanyStory(data.companyStory || {});
+        if (data.team && Array.isArray(data.team)) {
+          setTeam(data.team);
+          try { localStorage.setItem('neroots_custom_team', JSON.stringify(data.team)); } catch (e) {}
+        }
+        if (data.companyStory) {
+          setCompanyStory(data.companyStory);
+          try { localStorage.setItem('neroots_company_story', JSON.stringify(data.companyStory)); } catch (e) {}
+        }
       }
     } catch (err) {
       console.error(err);
