@@ -97,8 +97,8 @@ pickle-store/
 ### 2. Installation
 Clone the repository and install dependencies:
 ```bash
-git clone https://github.com/soumarjyotibhuyan-arch/pickle-storeV2.git
-cd pickle-storeV2
+git clone https://github.com/soumarjyotibhuyan-arch/neroots.git
+cd neroots
 npm install
 ```
 
