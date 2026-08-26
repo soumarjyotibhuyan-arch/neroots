@@ -305,17 +305,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Mobile-Friendly Search Bar */}
-        <div className="mobile-search-bar">
-          <input
-            type="text"
-            placeholder="🔍 Search Bhut Jolokia, Kazi Nemu, Bamboo shoot..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            aria-label="Search authentic pickles"
-          />
-        </div>
-
         {/* 5. Brand Promise Quote Strip from Official Label */}
         <section className="brand-promise-strip">
           <div className="promise-box">
