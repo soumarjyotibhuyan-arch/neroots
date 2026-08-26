@@ -359,7 +359,7 @@ export default function Checkout() {
 
             <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'center' }}>
               <a
-                href={`https://wa.me/919876543210?text=${encodeURIComponent(
+                href={`https://wa.me/917002669032?text=${encodeURIComponent(
                   `*NE ROOTS ORDER CONFIRMATION #${completedOrder.id}*\n` +
                   `*Customer:* ${completedOrder.customerName}\n` +
                   `*Phone:* ${completedOrder.phone}\n` +

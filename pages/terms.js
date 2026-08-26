@@ -49,7 +49,7 @@ export default function Terms() {
                 <li><strong>FSSAI Registration / License No:</strong> 20326101000625</li>
                 <li><strong>Registered Kitchen Address:</strong> G.S. Road, Guwahati, Kamrup Metropolitan, Assam - 781001, India</li>
                 <li><strong>Customer Support Email:</strong> contact@neroots.in</li>
-                <li><strong>Consumer Helpline:</strong> +91 98765 43210</li>
+                <li><strong>Consumer Helpline:</strong> +91 70026 69032</li>
               </ul>
             </div>
 

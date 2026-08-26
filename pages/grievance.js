@@ -63,7 +63,7 @@ export default function Grievance() {
               </div>
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: 12, textTransform: 'uppercase' }}>Consumer Helpline</span>
-                <strong>+91 98765 43210</strong>
+                <strong>+91 70026 69032</strong>
               </div>
               <div style={{ gridColumn: 'span 2' }}>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: 12, textTransform: 'uppercase' }}>Office Address</span>

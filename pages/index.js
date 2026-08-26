@@ -140,7 +140,7 @@ export default function Home() {
         },
         "contactPoint": {
           "@type": "ContactPoint",
-          "telephone": "+91-98765-43210",
+          "telephone": "+91-70026-69032",
           "contactType": "customer service",
           "email": "contact@neroots.in",
           "areaServed": "IN",
@@ -519,7 +519,7 @@ export default function Home() {
               <div style={{ fontSize: 13, lineHeight: 1.6, color: '#f7dede' }}>
                 <p><strong>Resident Grievance Officer:</strong><br />Mr. Soumarjyoti Bhuyan</p>
                 <p style={{ marginTop: 6 }}>📧 <strong>Email:</strong> grievance@neroots.in</p>
-                <p>📞 <strong>Helpline:</strong> +91 98765 43210</p>
+                <p>📞 <strong>Helpline:</strong> +91 70026 69032</p>
                 <p style={{ marginTop: 6, fontSize: 12, color: '#ffd147' }}>
                   ⏳ 48-Hour Statutory Acknowledgment • 30-Day Resolution SLA
                 </p>
