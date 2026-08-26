@@ -154,7 +154,8 @@ export default function Checkout() {
           gatewayOrderId: orderData.order_id || orderData.orderId,
           amountRupees: orderData.amountRupees,
           customerName: name.trim(),
-          customerPhone: phone.trim()
+          customerPhone: phone.trim(),
+          initialTab: 'qr'
         });
         setIsUPIModalOpen(true);
         setLoading(false);
@@ -162,7 +163,7 @@ export default function Checkout() {
       }
 
       // -------------------------------------------------------------
-      // 3. RAZORPAY STANDARD (UPI APPS, CARDS, NETBANKING)
+      // 3. RAZORPAY STANDARD / MULTI-CHANNEL PAYMENT MODAL
       // -------------------------------------------------------------
       const isLoaded = await new Promise((resolve) => {
         if (typeof window !== 'undefined' && window.Razorpay) {
@@ -238,13 +239,14 @@ export default function Checkout() {
         });
         rzp.open();
       } else {
-        // Fallback to Dynamic UPI QR Modal with 5-minute timer
+        // Multi-Channel Payment Modal (Cards, NetBanking, UPI Apps, QR)
         setPendingPaymentOrder({
           orderId: orderData.storeOrderId,
           gatewayOrderId: orderData.order_id || orderData.orderId,
           amountRupees: orderData.amountRupees,
           customerName: name.trim(),
-          customerPhone: phone.trim()
+          customerPhone: phone.trim(),
+          initialTab: paymentMethod === 'Cards & E-Banking' ? 'card' : 'intent'
         });
         setIsUPIModalOpen(true);
       }
@@ -872,7 +874,7 @@ export default function Checkout() {
         )}
       </main>
 
-      {/* Desktop & Fallback Dynamic UPI QR Modal with 5-Minute Countdown Timer */}
+      {/* Multi-Channel Payment Gateway Modal (Cards, E-Banking, UPI Apps, QR) */}
       {pendingPaymentOrder && (
         <DynamicUPIQRModal
           isOpen={isUPIModalOpen}
@@ -882,6 +884,7 @@ export default function Checkout() {
           gatewayOrderId={pendingPaymentOrder.gatewayOrderId}
           customerName={pendingPaymentOrder.customerName}
           customerPhone={pendingPaymentOrder.customerPhone}
+          initialTab={pendingPaymentOrder.initialTab || 'card'}
           isMobile={isMobile}
           onPaymentSuccess={(confirmedOrder) => {
             setIsUPIModalOpen(false);
