@@ -65,7 +65,7 @@ export default function Admin() {
 
   const getAuthToken = () => {
     try {
-      return sessionStorage.getItem('pickle_admin_token') || '';
+      return localStorage.getItem('pickle_admin_token') || '';
     } catch (e) {
       return '';
     }
@@ -80,8 +80,8 @@ export default function Admin() {
   useEffect(() => {
     async function initAdminAuth() {
       try {
-        const savedToken = sessionStorage.getItem('pickle_admin_token');
-        const savedUser = sessionStorage.getItem('pickle_admin_user');
+        const savedToken = localStorage.getItem('pickle_admin_token');
+        const savedUser = localStorage.getItem('pickle_admin_user');
         if (savedToken && savedUser) {
           setIsAuthenticated(true);
           setCurrentUser(JSON.parse(savedUser));
@@ -178,8 +178,8 @@ export default function Admin() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        sessionStorage.setItem('pickle_admin_token', data.token);
-        sessionStorage.setItem('pickle_admin_user', JSON.stringify(data.user));
+        localStorage.setItem('pickle_admin_token', data.token);
+        localStorage.setItem('pickle_admin_user', JSON.stringify(data.user));
         if (data.admins && Array.isArray(data.admins)) {
           setAdminTeam(data.admins);
           try {
@@ -510,8 +510,8 @@ export default function Admin() {
 
   const handleLogout = () => {
     try {
-      sessionStorage.removeItem('pickle_admin_token');
-      sessionStorage.removeItem('pickle_admin_user');
+      localStorage.removeItem('pickle_admin_token');
+      localStorage.removeItem('pickle_admin_user');
     } catch (e) {}
     setIsAuthenticated(false);
     setCurrentUser(null);

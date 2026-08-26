@@ -31,7 +31,21 @@ export default async function handler(req, res) {
       return res.status(200).json({ isAuthenticated: false, user: null });
     }
 
-    const session = activeCustomerSessions.get(token);
+    let session = activeCustomerSessions.get(token);
+    if (!session && token.startsWith('gsess_')) {
+      try {
+        const base64Payload = token.replace('gsess_', '');
+        const jsonStr = Buffer.from(base64Payload, 'base64').toString('utf8');
+        const userData = JSON.parse(jsonStr);
+        if (userData && userData.user && userData.expiresAt) {
+          session = userData;
+          activeCustomerSessions.set(token, session);
+        }
+      } catch (e) {
+        console.warn('Failed to parse stateless session token:', e.message);
+      }
+    }
+
     if (!session || Date.now() > session.expiresAt) {
       if (session) activeCustomerSessions.delete(token);
       return res.status(200).json({ isAuthenticated: false, user: null });
@@ -73,10 +87,7 @@ export default async function handler(req, res) {
       const { customer, isAdmin, adminRole } = findOrCreateCustomer(googleUser, db);
       saveDB(db);
 
-      // Create Secure Session
-      const sessionToken = `gsess_${Date.now()}_${Math.random().toString(36).substring(2)}${Math.random().toString(36).substring(2)}`;
-      const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7-day session
-
+      // Create Secure Session with Stateless payload encoding to survive serverless restarts
       const sessionUser = {
         id: customer.id,
         sub: customer.googleSub,
@@ -86,6 +97,16 @@ export default async function handler(req, res) {
         email_verified: customer.email_verified,
         savedAddresses: customer.savedAddresses || []
       };
+
+      const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7-day session
+      const userDataPayload = {
+        user: sessionUser,
+        isAdmin,
+        adminRole,
+        expiresAt
+      };
+      const base64Payload = Buffer.from(JSON.stringify(userDataPayload)).toString('base64');
+      const sessionToken = `gsess_${base64Payload}`;
 
       activeCustomerSessions.set(sessionToken, {
         user: sessionUser,

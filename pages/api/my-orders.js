@@ -33,12 +33,23 @@ export default function handler(req, res) {
       return res.status(401).json({ error: 'Authentication required. Please sign in with Google.' });
     }
 
-    const sessions = global._activeCustomerSessions;
-    if (!sessions) {
-      return res.status(401).json({ error: 'Session expired or not found. Please log in again.' });
+    const sessions = global._activeCustomerSessions || (global._activeCustomerSessions = new Map());
+    let session = sessions.get(token);
+
+    if (!session && token.startsWith('gsess_')) {
+      try {
+        const base64Payload = token.replace('gsess_', '');
+        const jsonStr = Buffer.from(base64Payload, 'base64').toString('utf8');
+        const userData = JSON.parse(jsonStr);
+        if (userData && userData.user && userData.expiresAt) {
+          session = userData;
+          sessions.set(token, session);
+        }
+      } catch (e) {
+        console.warn('Failed to parse stateless session token in my-orders:', e.message);
+      }
     }
 
-    const session = sessions.get(token);
     if (!session || Date.now() > session.expiresAt) {
       if (session) sessions.delete(token);
       return res.status(401).json({ error: 'Session expired. Please log in again.' });
