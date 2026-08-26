@@ -444,8 +444,42 @@ export default function Admin() {
         }
       }
 
+      // Merge fresh server orders into local storage backup to prevent loss on container restarts
+      let localOrders = [];
+      if (localMaster?.orders && Array.isArray(localMaster.orders)) {
+        localOrders = localMaster.orders;
+      }
+
+      const mergedOrdersMap = new Map();
+      localOrders.forEach(o => {
+        if (o && o.id) mergedOrdersMap.set(String(o.id), o);
+      });
+      const serverOrders = Array.isArray(oData) ? oData : [];
+      serverOrders.forEach(o => {
+        if (o && o.id) mergedOrdersMap.set(String(o.id), o);
+      });
+
+      const finalOrdersList = Array.from(mergedOrdersMap.values()).sort(
+        (a, b) => new Date(b.date || 0) - new Date(a.date || 0)
+      );
+
+      // Save merged snapshot to localStorage backup
+      try {
+        const updatedSnapshot = {
+          products: finalProducts,
+          team: finalTeam,
+          companyStory: finalStory,
+          reviews: finalReviews,
+          orders: finalOrdersList,
+          adminUsers: finalAdmins,
+          timestamp: Date.now(),
+          customEdits: true
+        };
+        localStorage.setItem('neroots_master_store_backup_v2', JSON.stringify(updatedSnapshot));
+      } catch (e) {}
+
       setProducts(finalProducts);
-      setOrders(Array.isArray(oData) ? oData : []);
+      setOrders(finalOrdersList);
       setAdminTeam(finalAdmins);
       setTeamMembers(finalTeam);
       if (finalStory) {
@@ -457,18 +491,16 @@ export default function Admin() {
       setCustomerReviews(finalReviews);
       setLastSyncTime(new Date().toLocaleTimeString());
 
-      // If we have local custom changes, push them to re-seed the cloud serverless DB
-      if (localMaster?.customEdits) {
-        pushFullSyncToCloud({
-          products: finalProducts,
-          team: finalTeam,
-          companyStory: finalStory,
-          reviews: finalReviews,
-          orders: Array.isArray(oData) ? oData : [],
-          adminUsers: finalAdmins,
-          timestamp: Date.now()
-        });
-      }
+      // Push merged snapshot back to cloud to keep serverless container in sync
+      pushFullSyncToCloud({
+        products: finalProducts,
+        team: finalTeam,
+        companyStory: finalStory,
+        reviews: finalReviews,
+        orders: finalOrdersList,
+        adminUsers: finalAdmins,
+        timestamp: Date.now()
+      });
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -726,7 +758,18 @@ export default function Admin() {
 
       if (res.ok) {
         showToast(`✅ Order #${orderId} status updated to "${newStatus}"`);
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+        setOrders(prev => {
+          const updated = prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o);
+          try {
+            const saved = localStorage.getItem('neroots_master_store_backup_v2');
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              parsed.orders = updated;
+              localStorage.setItem('neroots_master_store_backup_v2', JSON.stringify(parsed));
+            }
+          } catch (e) {}
+          return updated;
+        });
       } else {
         showToast('❌ Failed to update status.');
       }
