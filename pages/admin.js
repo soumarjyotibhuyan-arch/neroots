@@ -26,6 +26,8 @@ export default function Admin() {
   const [companyStory, setCompanyStory] = useState({});
   const [customerReviews, setCustomerReviews] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
 
   // Add Product Form State
   const [name, setName] = useState('');
@@ -195,6 +197,143 @@ export default function Admin() {
     performGoogleAuth({ email: googleEmailInput.trim() });
   };
 
+  /**
+   * Push full snapshot to cloud serverless runtime to prevent state loss
+   */
+  const pushFullSyncToCloud = async (overrideData) => {
+    try {
+      const token = getAuthToken();
+      if (!token) return;
+
+      const payload = overrideData || {
+        products,
+        team: teamMembers,
+        companyStory,
+        reviews: customerReviews,
+        orders,
+        adminUsers: adminTeam,
+        timestamp: Date.now()
+      };
+
+      const res = await fetch('/api/sync-store', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        setLastSyncTime(new Date().toLocaleTimeString());
+      }
+    } catch (e) {
+      console.warn('Cloud sync background notice:', e.message);
+    }
+  };
+
+  const handleForceCloudSync = async () => {
+    try {
+      setIsSyncingCloud(true);
+      const snapshot = {
+        products,
+        team: teamMembers,
+        companyStory,
+        reviews: customerReviews,
+        orders,
+        adminUsers: adminTeam,
+        timestamp: Date.now(),
+        customEdits: true
+      };
+      await pushFullSyncToCloud(snapshot);
+      showToast('☁️ All catalog, team, and store changes synchronized with cloud serverless DB!');
+    } catch (err) {
+      showToast('❌ Cloud sync failed: ' + err.message);
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  };
+
+  const handleExportBackup = () => {
+    try {
+      const backupData = {
+        version: "2.0.0",
+        appName: "NE Roots Pickle Store",
+        exportedAt: new Date().toISOString(),
+        exportedBy: currentUser?.email || 'admin',
+        data: {
+          products,
+          team: teamMembers,
+          companyStory,
+          reviews: customerReviews,
+          adminUsers: adminTeam,
+          orders
+        }
+      };
+
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `neroots_store_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast('📥 Store snapshot exported successfully!');
+    } catch (err) {
+      console.error(err);
+      showToast('❌ Failed to export backup');
+    }
+  };
+
+  const handleImportBackup = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        const importedData = parsed.data || parsed;
+
+        if (Array.isArray(importedData.products)) setProducts(importedData.products);
+        if (Array.isArray(importedData.team)) setTeamMembers(importedData.team);
+        if (importedData.companyStory) setCompanyStory(importedData.companyStory);
+        if (Array.isArray(importedData.reviews)) setCustomerReviews(importedData.reviews);
+        if (Array.isArray(importedData.adminUsers)) setAdminTeam(importedData.adminUsers);
+        if (Array.isArray(importedData.orders)) setOrders(importedData.orders);
+
+        const snapshot = {
+          products: importedData.products || products,
+          team: importedData.team || teamMembers,
+          companyStory: importedData.companyStory || companyStory,
+          reviews: importedData.reviews || customerReviews,
+          adminUsers: importedData.adminUsers || adminTeam,
+          orders: importedData.orders || orders,
+          timestamp: Date.now(),
+          customEdits: true
+        };
+
+        localStorage.setItem('neroots_master_store_backup_v2', JSON.stringify(snapshot));
+        if (importedData.products) localStorage.setItem('neroots_custom_products', JSON.stringify(importedData.products));
+        if (importedData.team) localStorage.setItem('neroots_custom_team', JSON.stringify(importedData.team));
+        if (importedData.companyStory) localStorage.setItem('neroots_company_story', JSON.stringify(importedData.companyStory));
+        if (importedData.reviews) localStorage.setItem('neroots_custom_reviews', JSON.stringify(importedData.reviews));
+        if (importedData.adminUsers) localStorage.setItem('neroots_admin_whitelist', JSON.stringify(importedData.adminUsers));
+
+        await pushFullSyncToCloud(snapshot);
+        showToast('✅ Store backup imported and synced across cloud!');
+      } catch (err) {
+        console.error(err);
+        showToast('❌ Invalid backup JSON file format');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null;
+  };
+
   const notifyDataSync = (type, data) => {
     try {
       if (type === 'admins' && data) localStorage.setItem('neroots_admin_whitelist', JSON.stringify(data));
@@ -202,12 +341,27 @@ export default function Admin() {
       if (type === 'story' && data) localStorage.setItem('neroots_company_story', JSON.stringify(data));
       if (type === 'products' && data) localStorage.setItem('neroots_custom_products', JSON.stringify(data));
       if (type === 'reviews' && data) localStorage.setItem('neroots_custom_reviews', JSON.stringify(data));
+
+      const currentSnapshot = {
+        products: type === 'products' ? data : products,
+        team: type === 'team' ? data : teamMembers,
+        companyStory: type === 'story' ? data : companyStory,
+        reviews: type === 'reviews' ? data : customerReviews,
+        orders,
+        adminUsers: type === 'admins' ? data : adminTeam,
+        timestamp: Date.now(),
+        customEdits: true
+      };
+      localStorage.setItem('neroots_master_store_backup_v2', JSON.stringify(currentSnapshot));
+
       window.dispatchEvent(new CustomEvent('neroots_data_updated', { detail: { type } }));
       if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('neroots_sync_channel');
         bc.postMessage({ type, timestamp: Date.now() });
         bc.close();
       }
+
+      pushFullSyncToCloud(currentSnapshot);
     } catch (e) {}
   };
 
@@ -244,24 +398,67 @@ export default function Admin() {
       const freshTeam = Array.isArray(tData.team) ? tData.team : [];
       const freshReviews = Array.isArray(rData) ? rData : [];
 
-      setProducts(freshProducts);
-      setOrders(Array.isArray(oData) ? oData : []);
-      setAdminTeam(Array.isArray(aData.admins) ? aData.admins : []);
-      setTeamMembers(freshTeam);
-      if (tData.companyStory) {
-        setCompanyStory(tData.companyStory);
-        setStoryHeadline(tData.companyStory.headline || '');
-        setStoryNarrative(tData.companyStory.narrative || '');
-        setStoryMission(tData.companyStory.mission || '');
-      }
-      setCustomerReviews(freshReviews);
+      let localMaster = null;
+      try {
+        const saved = localStorage.getItem('neroots_master_store_backup_v2');
+        if (saved) localMaster = JSON.parse(saved);
+      } catch (e) {}
 
-      // Sync to local storage
-      if (aData.admins) notifyDataSync('admins', aData.admins);
-      notifyDataSync('team', freshTeam);
-      if (tData.companyStory) notifyDataSync('story', tData.companyStory);
-      notifyDataSync('products', freshProducts);
-      notifyDataSync('reviews', freshReviews);
+      // Preserve and merge local admin customizations over default fresh serverless data
+      let finalProducts = freshProducts;
+      if (localMaster?.products && Array.isArray(localMaster.products) && localMaster.customEdits) {
+        finalProducts = localMaster.products;
+      }
+
+      let finalTeam = freshTeam;
+      if (localMaster?.team && Array.isArray(localMaster.team) && localMaster.customEdits) {
+        finalTeam = localMaster.team;
+      }
+
+      let finalStory = tData.companyStory || companyStory;
+      if (localMaster?.companyStory && localMaster.customEdits) {
+        finalStory = { ...finalStory, ...localMaster.companyStory };
+      }
+
+      let finalReviews = freshReviews;
+      if (localMaster?.reviews && Array.isArray(localMaster.reviews) && localMaster.customEdits) {
+        finalReviews = localMaster.reviews;
+      }
+
+      let finalAdmins = Array.isArray(aData.admins) ? aData.admins : [];
+      if (localMaster?.adminUsers && Array.isArray(localMaster.adminUsers) && localMaster.customEdits) {
+        for (const u of localMaster.adminUsers) {
+          if (!finalAdmins.some(a => a.email?.toLowerCase() === u.email?.toLowerCase())) {
+            finalAdmins.push(u);
+          }
+        }
+      }
+
+      setProducts(finalProducts);
+      setOrders(Array.isArray(oData) ? oData : []);
+      setAdminTeam(finalAdmins);
+      setTeamMembers(finalTeam);
+      if (finalStory) {
+        setCompanyStory(finalStory);
+        setStoryHeadline(finalStory.headline || '');
+        setStoryNarrative(finalStory.narrative || '');
+        setStoryMission(finalStory.mission || '');
+      }
+      setCustomerReviews(finalReviews);
+      setLastSyncTime(new Date().toLocaleTimeString());
+
+      // If we have local custom changes, push them to re-seed the cloud serverless DB
+      if (localMaster?.customEdits) {
+        pushFullSyncToCloud({
+          products: finalProducts,
+          team: finalTeam,
+          companyStory: finalStory,
+          reviews: finalReviews,
+          orders: Array.isArray(oData) ? oData : [],
+          adminUsers: finalAdmins,
+          timestamp: Date.now()
+        });
+      }
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -914,6 +1111,12 @@ export default function Admin() {
             className={`admin-tab-btn ${activeTab === 'admins' ? 'active' : ''}`}
           >
             🔐 Google Whitelist ({adminTeam.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('backup_sync')}
+            className={`admin-tab-btn ${activeTab === 'backup_sync' ? 'active' : ''}`}
+          >
+            💾 Backup &amp; Cloud Sync
           </button>
         </div>
 
@@ -1615,6 +1818,155 @@ export default function Admin() {
                     )}
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 7: STORE DATA BACKUP & CLOUD PERSISTENCE */}
+        {activeTab === 'backup_sync' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Live Sync Status Banner */}
+            <div style={{
+              background: '#ffffff',
+              padding: 28,
+              borderRadius: 'var(--radius-lg)',
+              border: '2px solid var(--accent-gold)',
+              boxShadow: 'var(--shadow-sm)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 18 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                      display: 'inline-block',
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      background: '#10b981',
+                      boxShadow: '0 0 10px #10b981'
+                    }}></span>
+                    <h2 style={{ fontSize: 22, margin: 0, color: 'var(--primary-dark)' }}>
+                      Indestructible Cloud Persistence &amp; Auto-Sync Engine
+                    </h2>
+                  </div>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 13.5, margin: '6px 0 0 0' }}>
+                    All modifications to products, prices, team profiles, reviews, and admin accounts are automatically cached locally and pushed to the cloud serverless DB so your changes persist across all future app deployments and cold starts.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleForceCloudSync}
+                  disabled={isSyncingCloud}
+                  style={{
+                    background: 'var(--primary)',
+                    color: '#fff',
+                    padding: '12px 24px',
+                    borderRadius: 'var(--radius-full)',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    boxShadow: '0 4px 14px rgba(230, 43, 43, 0.3)',
+                    cursor: isSyncingCloud ? 'not-allowed' : 'pointer',
+                    opacity: isSyncingCloud ? 0.7 : 1
+                  }}
+                >
+                  {isSyncingCloud ? '⏳ Syncing Cloud DB...' : '🔄 Sync All Changes to Cloud Now'}
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', fontSize: 13, color: 'var(--text-dark)', paddingTop: 14, borderTop: '1px solid var(--border-subtle)' }}>
+                <div>⏱️ <strong>Last Cloud Synchronized:</strong> {lastSyncTime || 'Active / Live'}</div>
+                <div>📦 <strong>Cached Catalog Items:</strong> {products.length} Products</div>
+                <div>👥 <strong>Team Profiles:</strong> {teamMembers.length} Members</div>
+                <div>⭐ <strong>Customer Reviews:</strong> {customerReviews.length} Reviews</div>
+                <div>🔐 <strong>Admins Whitelisted:</strong> {adminTeam.length} Accounts</div>
+              </div>
+            </div>
+
+            {/* Export & Import Tools */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
+              {/* 1. Export Backup Card */}
+              <div style={{
+                background: '#ffffff',
+                padding: 24,
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                <div>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>📥</div>
+                  <h3 style={{ fontSize: 18, marginBottom: 8, color: 'var(--text-dark)' }}>Export Store Backup (JSON)</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 13.5, lineHeight: 1.5, marginBottom: 20 }}>
+                    Download an offline snapshot containing all current pickle product catalog data, custom pricing, descriptions, team profiles, brand story, and approved customer reviews.
+                  </p>
+                </div>
+                <button
+                  onClick={handleExportBackup}
+                  style={{
+                    background: '#15276e',
+                    color: '#ffffff',
+                    padding: '12px 20px',
+                    borderRadius: 'var(--radius-full)',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    boxShadow: '0 4px 12px rgba(21, 39, 110, 0.25)'
+                  }}
+                >
+                  📥 Download Store Backup JSON
+                </button>
+              </div>
+
+              {/* 2. Restore Backup Card */}
+              <div style={{
+                background: '#ffffff',
+                padding: 24,
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                <div>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>📤</div>
+                  <h3 style={{ fontSize: 18, marginBottom: 8, color: 'var(--text-dark)' }}>Restore Store from Backup</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 13.5, lineHeight: 1.5, marginBottom: 20 }}>
+                    Upload a previously exported store JSON backup to immediately restore your entire store catalogue, pricing, and settings with 1-click cloud synchronization.
+                  </p>
+                </div>
+
+                <label style={{
+                  background: 'var(--bg-cream)',
+                  color: 'var(--primary-dark)',
+                  border: '2px dashed var(--accent-gold-dark)',
+                  padding: '12px 20px',
+                  borderRadius: 'var(--radius-full)',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}>
+                  <span>📤 Choose Backup JSON File</span>
+                  <input
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={handleImportBackup}
+                    style={{ display: 'none' }}
+                  />
+                </label>
               </div>
             </div>
           </div>

@@ -50,13 +50,29 @@ export default function Team() {
       const res = await fetch(`/api/team?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        if (data.team && Array.isArray(data.team)) {
-          setTeam(data.team);
-          try { localStorage.setItem('neroots_custom_team', JSON.stringify(data.team)); } catch (e) {}
+        let finalTeam = data.team || [];
+        let finalStory = data.companyStory || null;
+
+        try {
+          const master = localStorage.getItem('neroots_master_store_backup_v2');
+          if (master) {
+            const parsed = JSON.parse(master);
+            if (Array.isArray(parsed.team) && parsed.customEdits) {
+              finalTeam = parsed.team;
+            }
+            if (parsed.companyStory && parsed.customEdits) {
+              finalStory = parsed.companyStory;
+            }
+          }
+        } catch (e) {}
+
+        if (Array.isArray(finalTeam)) {
+          setTeam(finalTeam);
+          try { localStorage.setItem('neroots_custom_team', JSON.stringify(finalTeam)); } catch (e) {}
         }
-        if (data.companyStory) {
-          setCompanyStory(data.companyStory);
-          try { localStorage.setItem('neroots_company_story', JSON.stringify(data.companyStory)); } catch (e) {}
+        if (finalStory) {
+          setCompanyStory(finalStory);
+          try { localStorage.setItem('neroots_company_story', JSON.stringify(finalStory)); } catch (e) {}
         }
       }
     } catch (err) {

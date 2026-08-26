@@ -70,11 +70,22 @@ export default function Home() {
       const res = await fetch(`/api/products?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       if (Array.isArray(data)) {
-        setProducts(data);
-        try { localStorage.setItem('neroots_custom_products', JSON.stringify(data)); } catch (e) {}
+        let finalProducts = data;
+        try {
+          const master = localStorage.getItem('neroots_master_store_backup_v2');
+          if (master) {
+            const parsed = JSON.parse(master);
+            if (Array.isArray(parsed.products) && parsed.customEdits) {
+              finalProducts = parsed.products;
+            }
+          }
+        } catch (e) {}
+
+        setProducts(finalProducts);
+        try { localStorage.setItem('neroots_custom_products', JSON.stringify(finalProducts)); } catch (e) {}
 
         const initialWeights = {};
-        data.forEach(p => {
+        finalProducts.forEach(p => {
           initialWeights[p.id] = '250g';
         });
         setSelectedWeights(prev => ({ ...initialWeights, ...prev }));
