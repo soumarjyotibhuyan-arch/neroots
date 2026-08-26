@@ -111,7 +111,7 @@ export default function Admin() {
 
   // Initialize Google Identity Services if a valid Client ID is configured
   useEffect(() => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1008064937217-p2vfqk533b3a7vfhbeacplgrt8c6r048.apps.googleusercontent.com';
     const isRealClientId = clientId && !clientId.includes('example') && !clientId.startsWith('1234567890');
 
     if (isRealClientId && !isAuthenticated && typeof window !== 'undefined' && window.google?.accounts?.id) {

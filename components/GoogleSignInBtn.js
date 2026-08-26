@@ -14,7 +14,7 @@ export default function GoogleSignInBtn({
   const { user, loginWithGoogle, isAuthLoading } = useStore();
   const [showConfigHelp, setShowConfigHelp] = useState(false);
 
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1008064937217-p2vfqk533b3a7vfhbeacplgrt8c6r048.apps.googleusercontent.com';
   const isConfigured = clientId && !clientId.includes('example') && !clientId.startsWith('1234567890');
 
   useEffect(() => {
