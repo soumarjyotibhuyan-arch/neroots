@@ -26,8 +26,8 @@
         "Rock Salt",
         "Traditional Assamese Spices"
       ],
-      "rating": 4.98,
-      "reviewCount": 248,
+      "rating": 5.0,
+      "reviewCount": 0,
       "inStock": true,
       "featured": true
     },
@@ -57,8 +57,8 @@
         "Black Salt",
         "Ajwain"
       ],
-      "rating": 4.95,
-      "reviewCount": 186,
+      "rating": 5.0,
+      "reviewCount": 0,
       "inStock": true,
       "featured": true
     },
@@ -87,8 +87,8 @@
         "Himalayan Pink Salt",
         "Spices"
       ],
-      "rating": 4.91,
-      "reviewCount": 142,
+      "rating": 5.0,
+      "reviewCount": 0,
       "inStock": true,
       "featured": true
     },
@@ -118,8 +118,8 @@
         "Hing",
         "Sea Salt"
       ],
-      "rating": 4.88,
-      "reviewCount": 119,
+      "rating": 5.0,
+      "reviewCount": 0,
       "inStock": true,
       "featured": true
     },
@@ -149,8 +149,8 @@
         "Kalonji",
         "Rock Salt"
       ],
-      "rating": 4.93,
-      "reviewCount": 165,
+      "rating": 5.0,
+      "reviewCount": 0,
       "inStock": true,
       "featured": true
     },
@@ -180,226 +180,14 @@
         "Ajwain",
         "Black Salt"
       ],
-      "rating": 4.94,
-      "reviewCount": 98,
+      "rating": 5.0,
+      "reviewCount": 0,
       "inStock": true,
       "featured": true
     }
   ],
-  "orders": [
-    {
-      "id": "PKL-6646",
-      "gatewayOrderId": "order_TUEx8AR4kVHO2O",
-      "receiptId": "rcpt_1787712774108_4231",
-      "customerName": "Soumarjyoti Bhuyan",
-      "phone": "1234567890",
-      "email": "soumarjyotibhuyan@gmail.com",
-      "address": "Dighaliati, Nagaon - 782103",
-      "notes": "",
-      "customerId": null,
-      "paymentMethod": "UPI / Online Paid",
-      "subtotal": 747,
-      "discount": 0,
-      "shipping": 0,
-      "total": 747,
-      "cart": [
-        {
-          "id": 2,
-          "name": "Assam Nemu Lime",
-          "weight": "250g",
-          "price": 249,
-          "quantity": 3,
-          "image": "/images/kazi_nemu_pickle.jpg"
-        }
-      ],
-      "status": "Payment Pending",
-      "paymentGateway": "Razorpay Standard Checkout",
-      "createdAt": "2026-08-26T02:52:54.291Z",
-      "date": "2026-08-26 02:52"
-    },
-    {
-      "id": "PKL-3496",
-      "customerName": "Bikram Sharma",
-      "phone": "9811223344",
-      "email": "bikram@example.com",
-      "address": "Beltola Bazar, Guwahati - 781028",
-      "notes": "",
-      "paymentMethod": "Cash on Delivery",
-      "subtotal": 249,
-      "discount": 0,
-      "shipping": 49,
-      "total": 298,
-      "cart": [
-        {
-          "id": 2,
-          "name": "Nemu Lemon Pickle",
-          "weight": "250g",
-          "price": 249,
-          "quantity": 1,
-          "image": "/images/kazi_nemu_pickle.jpg"
-        }
-      ],
-      "status": "Pending (Cash on Delivery)",
-      "date": "2026-08-25 19:30"
-    },
-    {
-      "id": "PKL-3460",
-      "gatewayOrderId": "order_8a3821af18f6fe43",
-      "receiptId": "rcpt_1787686185191_7121",
-      "customerName": "Priyanshu Borah",
-      "phone": "9876543210",
-      "email": "priyanshu@example.com",
-      "address": "Zoo Road Tiniali, Guwahati - 781024",
-      "notes": "",
-      "customerId": null,
-      "paymentMethod": "UPI / Online Paid",
-      "subtotal": 598,
-      "discount": 0,
-      "shipping": 49,
-      "total": 647,
-      "cart": [
-        {
-          "id": 1,
-          "name": "Assam Bhut Jolokia Pickle",
-          "weight": "250g",
-          "price": 299,
-          "quantity": 2,
-          "image": "/images/bhut_jolokia_pickle.jpg"
-        }
-      ],
-      "status": "Confirmed (Online Paid)",
-      "paymentGateway": "Razorpay / Webhook",
-      "createdAt": "2026-08-25T19:29:45.194Z",
-      "date": "2026-08-25 19:29",
-      "paymentId": "pay_webhook_7788",
-      "paymentSignature": "mock_sig_test",
-      "paidAt": "2026-08-25T19:29:57.632Z"
-    },
-    {
-      "id": "NER-2041",
-      "customerName": "Aarav Sharma",
-      "phone": "+91 98765 43210",
-      "email": "aarav.sharma@example.com",
-      "address": "Flat 402, Lotus Residency, Indiranagar, Bengaluru, 560038",
-      "paymentMethod": "Cash on Delivery",
-      "subtotal": 798,
-      "discount": 50,
-      "shipping": 0,
-      "total": 748,
-      "cart": [
-        {
-          "id": 1,
-          "name": "NE Roots Assam Bhut Jolokia & Bamboo Shoot Pickle",
-          "weight": "500g",
-          "price": 549,
-          "quantity": 1,
-          "image": "/images/bhut_jolokia_pickle.jpg"
-        },
-        {
-          "id": 2,
-          "name": "NE Roots Assam Nemu Lime Pickle",
-          "weight": "250g",
-          "price": 249,
-          "quantity": 1,
-          "image": "/images/kazi_nemu_pickle.jpg"
-        }
-      ],
-      "status": "Delivered",
-      "date": "2026-08-23 14:30"
-    },
-    {
-      "id": "NER-2042",
-      "customerName": "Pooja Hegde",
-      "phone": "+91 91234 56789",
-      "email": "pooja.h@example.com",
-      "address": "Plot 18, Banjara Hills Road No 12, Hyderabad, 500034",
-      "paymentMethod": "UPI / Online Paid",
-      "subtotal": 519,
-      "discount": 0,
-      "shipping": 0,
-      "total": 519,
-      "cart": [
-        {
-          "id": 3,
-          "name": "NE Roots Sikkim Dalle Khursani Round Cherry Chilli Pickle",
-          "weight": "500g",
-          "price": 519,
-          "quantity": 1,
-          "image": "/images/dalle_khursani_pickle.jpg"
-        }
-      ],
-      "status": "Shipped",
-      "date": "2026-08-24 10:15"
-    }
-  ],
-  "reviews": [
-    {
-      "id": 1787677746415,
-      "author": "Nilav Jyoti",
-      "location": "Jorhat, Assam",
-      "rating": 5,
-      "flavour": "Assam Nemu King Lime Pickle",
-      "title": "Incredible fresh aroma!",
-      "comment": "Tastes just like my home made pickle!",
-      "date": "2026-08-25",
-      "verifiedPurchase": true
-    },
-    {
-      "id": 1,
-      "author": "Kaushik Goswami",
-      "location": "Guwahati, Assam",
-      "rating": 5,
-      "flavour": "Assam Bhut Jolokia & Bamboo Shoot Pickle",
-      "title": "Authentic Khorisa taste! Reminds me of home in Tezpur",
-      "comment": "The pungency of the mustard oil and the authentic fermented bamboo shoot aroma is unmatched. Usually commercial brands don't get the Khorisa balance right, but NE Roots nailed the grandmother's touch!",
-      "date": "2026-08-22",
-      "verifiedPurchase": true
-    },
-    {
-      "id": 2,
-      "author": "Dr. Malavika Saikia",
-      "location": "Bengaluru, Karnataka",
-      "rating": 5,
-      "flavour": "Assam Nemu King Lime Pickle",
-      "title": "Best Nemu pickle in India! That floral citrus aroma is heavenly",
-      "comment": "I live away from Assam and missed Nemu terribly. The moment I opened the jar, the fragrance filled my kitchen. The mustard seed paste and soft peel are pure perfection. Delivered in 3 days safely!",
-      "date": "2026-08-20",
-      "verifiedPurchase": true
-    },
-    {
-      "id": 3,
-      "author": "Vikramjit Roy",
-      "location": "Kolkata, West Bengal",
-      "rating": 5,
-      "flavour": "Sikkim Dalle Khursani Round Cherry Chilli",
-      "title": "Fiery punch with intense flavor! Must-try for chilli lovers",
-      "comment": "Dalle Khursani is difficult to find outside Sikkim/Darjeeling. The whole cherry chillies bursting with mustard oil and fenugreek elevate plain dal-rice to gourmet status.",
-      "date": "2026-08-18",
-      "verifiedPurchase": true
-    },
-    {
-      "id": 4,
-      "author": "Sneha Phukan",
-      "location": "Mumbai, Maharashtra",
-      "rating": 5,
-      "flavour": "Wild Hill Garlic & Mustard Seed Achaar",
-      "title": "Super flavorful and not overly sour like mass market pickles",
-      "comment": "The garlic cloves are tender and soaked in rich cold-pressed mustard oil. You can genuinely taste that there are zero artificial preservatives.",
-      "date": "2026-08-15",
-      "verifiedPurchase": true
-    },
-    {
-      "id": 5,
-      "author": "Prateek Barua",
-      "location": "Delhi NCR",
-      "rating": 5,
-      "flavour": "Sun-Cured Raw Mango & Bhoot Jolokia Fusion",
-      "title": "The Ghost Pepper kick is brilliant!",
-      "comment": "Traditional mango achaar with that subtle, building heat of King Chilli. Loved the packaging and the glass jar quality.",
-      "date": "2026-08-12",
-      "verifiedPurchase": true
-    }
-  ],
+  "orders": [],
+  "reviews": [],
   "team": [
     {
       "id": 1,

@@ -421,9 +421,6 @@ export default function Admin() {
       }
 
       let finalReviews = freshReviews;
-      if (localMaster?.reviews && Array.isArray(localMaster.reviews) && localMaster.customEdits) {
-        finalReviews = localMaster.reviews;
-      }
 
       let finalAdmins = Array.isArray(aData.admins) ? aData.admins : [];
       if (localMaster?.adminUsers && Array.isArray(localMaster.adminUsers) && localMaster.customEdits) {

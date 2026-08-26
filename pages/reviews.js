@@ -74,21 +74,9 @@ export default function Reviews() {
       const res = await fetch(`/api/reviews?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        let finalReviews = data;
-
-        try {
-          const master = localStorage.getItem('neroots_master_store_backup_v2');
-          if (master) {
-            const parsed = JSON.parse(master);
-            if (Array.isArray(parsed.reviews) && parsed.customEdits) {
-              finalReviews = parsed.reviews;
-            }
-          }
-        } catch (e) {}
-
-        if (Array.isArray(finalReviews)) {
-          setReviews(finalReviews);
-          try { localStorage.setItem('neroots_custom_reviews', JSON.stringify(finalReviews)); } catch (e) {}
+        if (Array.isArray(data)) {
+          setReviews(data);
+          try { localStorage.setItem('neroots_custom_reviews', JSON.stringify(data)); } catch (e) {}
         }
       }
     } catch (err) {
