@@ -124,9 +124,9 @@ export default function Checkout() {
       }
 
       // -------------------------------------------------------------
-      // 2. UNIFIED ONLINE PAYMENT (RAZORPAY + UPI INTENT / DYNAMIC QR)
+      // 2. UNIFIED ONLINE PAYMENT (RAZORPAY STANDARD WEB CHECKOUT)
       // -------------------------------------------------------------
-      const orderInitRes = await fetch('/api/payment/create-order', {
+      const orderInitRes = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -148,16 +148,29 @@ export default function Checkout() {
         return;
       }
 
-      // Check if Razorpay client SDK is loaded in browser
-      if (typeof window !== 'undefined' && window.Razorpay) {
+      // Ensure Razorpay SDK script is loaded in browser
+      const isLoaded = await new Promise((resolve) => {
+        if (typeof window !== 'undefined' && window.Razorpay) {
+          return resolve(true);
+        }
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+
+      if (isLoaded && typeof window !== 'undefined' && window.Razorpay) {
+        const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || orderData.key_id || orderData.keyId || 'rzp_test_TUEl7SyeNdN6Rx';
         const rzpOptions = {
-          key: orderData.keyId,
+          key: rzpKey,
           amount: orderData.amount,
           currency: orderData.currency || 'INR',
           name: 'NE Roots (North East Roots)',
           description: `Assam Artisanal Pickles • Order #${orderData.storeOrderId}`,
           image: '/images/ner_logo_icon.jpg',
-          order_id: orderData.orderId,
+          order_id: orderData.order_id || orderData.orderId,
           prefill: {
             name: name.trim(),
             email: email.trim() || (user?.email || ''),
@@ -166,28 +179,10 @@ export default function Checkout() {
           theme: {
             color: '#e62b2b'
           },
-          config: {
-            display: {
-              blocks: {
-                banks: {
-                  name: 'Instant Payment',
-                  instruments: [
-                    { method: 'upi' },
-                    { method: 'card' },
-                    { method: 'netbanking' }
-                  ]
-                }
-              },
-              sequence: ['block.banks'],
-              preferences: {
-                show_default_blocks: true
-              }
-            }
-          },
           handler: async function (response) {
             setLoading(true);
             try {
-              const verifyRes = await fetch('/api/payment/verify', {
+              const verifyRes = await fetch('/api/verify-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -204,10 +199,11 @@ export default function Checkout() {
                 clearCart();
                 showToast('🎉 Payment verified! Order confirmed!');
               } else {
-                showToast('⚠️ Payment received. Order status updating...');
+                showToast(`❌ ${verifyData.error || 'Payment signature verification failed'}`);
               }
             } catch (err) {
               console.error('Verify error:', err);
+              showToast('❌ Network error verifying payment signature.');
             } finally {
               setLoading(false);
             }
@@ -215,7 +211,7 @@ export default function Checkout() {
           modal: {
             ondismiss: function () {
               setLoading(false);
-              showToast('ℹ️ Payment checkout closed. You can retry or scan the Dynamic UPI QR.');
+              showToast('ℹ️ Payment checkout cancelled.');
             }
           }
         };
@@ -223,14 +219,14 @@ export default function Checkout() {
         const rzp = new window.Razorpay(rzpOptions);
         rzp.on('payment.failed', function (response) {
           setLoading(false);
-          showToast(`❌ Payment declined: ${response.error?.description || 'Transaction failed'}`);
+          showToast(`❌ Payment failed: ${response.error?.description || response.error?.reason || 'Transaction declined'}`);
         });
         rzp.open();
       } else {
         // Fallback to Dynamic UPI QR Modal with 5-minute timer
         setPendingPaymentOrder({
           orderId: orderData.storeOrderId,
-          gatewayOrderId: orderData.orderId,
+          gatewayOrderId: orderData.order_id || orderData.orderId,
           amountRupees: orderData.amountRupees,
           customerName: name.trim()
         });
