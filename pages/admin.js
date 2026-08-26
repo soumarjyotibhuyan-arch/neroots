@@ -88,12 +88,12 @@ export default function Admin() {
           return;
         }
 
-        // If no token in sessionStorage, check active Google session cookie
+        // Check active Google customer session cookie
         const res = await fetch('/api/auth/google');
         if (res.ok) {
           const authData = await res.json();
-          if (authData.isAuthenticated && authData.isAdmin && authData.user?.email) {
-            await performGoogleAuth({ email: authData.user.email, name: authData.user.name });
+          if (authData.isAuthenticated && authData.user?.email) {
+            await performGoogleAuth({ email: authData.user.email, name: authData.user.name, avatar: authData.user.picture });
             setIsCheckingAuth(false);
             return;
           }
@@ -144,17 +144,33 @@ export default function Admin() {
     setAuthLoading(true);
     setAuthError('');
 
+    let clientWhitelist = [];
+    try {
+      const stored = localStorage.getItem('neroots_admin_whitelist');
+      if (stored) clientWhitelist = JSON.parse(stored);
+    } catch (e) {}
+
     try {
       const res = await fetch('/api/admin-auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'google_login', ...payload })
+        body: JSON.stringify({
+          action: 'google_login',
+          clientAdminWhitelist: clientWhitelist,
+          ...payload
+        })
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
         sessionStorage.setItem('pickle_admin_token', data.token);
         sessionStorage.setItem('pickle_admin_user', JSON.stringify(data.user));
+        if (data.admins && Array.isArray(data.admins)) {
+          setAdminTeam(data.admins);
+          try {
+            localStorage.setItem('neroots_admin_whitelist', JSON.stringify(data.admins));
+          } catch (e) {}
+        }
         setIsAuthenticated(true);
         setCurrentUser(data.user);
         showToast(`✅ Welcome back, ${data.user.name}! (Verified Google Admin)`);
@@ -181,6 +197,7 @@ export default function Admin() {
 
   const notifyDataSync = (type, data) => {
     try {
+      if (type === 'admins' && data) localStorage.setItem('neroots_admin_whitelist', JSON.stringify(data));
       if (type === 'team' && data) localStorage.setItem('neroots_custom_team', JSON.stringify(data));
       if (type === 'story' && data) localStorage.setItem('neroots_company_story', JSON.stringify(data));
       if (type === 'products' && data) localStorage.setItem('neroots_custom_products', JSON.stringify(data));
@@ -240,6 +257,7 @@ export default function Admin() {
       setCustomerReviews(freshReviews);
 
       // Sync to local storage
+      if (aData.admins) notifyDataSync('admins', aData.admins);
       notifyDataSync('team', freshTeam);
       if (tData.companyStory) notifyDataSync('story', tData.companyStory);
       notifyDataSync('products', freshProducts);
@@ -403,7 +421,12 @@ export default function Admin() {
         showToast(`✅ ${newAdminEmail} added to authorized Google Admins!`);
         setNewAdminEmail('');
         setNewAdminName('');
-        setAdminTeam(data.admins || []);
+        const updatedAdmins = data.admins || [];
+        setAdminTeam(updatedAdmins);
+        try {
+          localStorage.setItem('neroots_admin_whitelist', JSON.stringify(updatedAdmins));
+        } catch (e) {}
+        notifyDataSync('admins', updatedAdmins);
       } else {
         showToast(`❌ ${data.error || 'Failed to add admin user'}`);
       }
@@ -426,7 +449,12 @@ export default function Admin() {
       const data = await res.json();
       if (res.ok && data.success) {
         showToast('🗑️ Admin access revoked.');
-        setAdminTeam(data.admins || []);
+        const updatedAdmins = data.admins || [];
+        setAdminTeam(updatedAdmins);
+        try {
+          localStorage.setItem('neroots_admin_whitelist', JSON.stringify(updatedAdmins));
+        } catch (e) {}
+        notifyDataSync('admins', updatedAdmins);
       } else {
         showToast(`❌ ${data.error || 'Failed to revoke admin'}`);
       }
