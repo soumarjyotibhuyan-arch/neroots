@@ -650,102 +650,52 @@ export default function Checkout() {
                   </h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {/* Option 1: Instant UPI Apps */}
+                    {/* Option 1: Razorpay Official Gateway */}
                     <label
                       style={{
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         gap: 14,
-                        padding: 14,
-                        borderRadius: 10,
-                        border: paymentMethod === 'UPI / Online Paid' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                        background: paymentMethod === 'UPI / Online Paid' ? '#fff5f5' : '#fff',
+                        padding: 16,
+                        borderRadius: 12,
+                        border: paymentMethod === 'Razorpay Gateway' || paymentMethod === 'UPI / Online Paid' || paymentMethod === 'Cards & E-Banking' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                        background: paymentMethod === 'Razorpay Gateway' || paymentMethod === 'UPI / Online Paid' || paymentMethod === 'Cards & E-Banking' ? '#fff5f5' : '#fff',
                         cursor: 'pointer'
                       }}
                     >
                       <input
                         type="radio"
                         name="payment"
-                        checked={paymentMethod === 'UPI / Online Paid'}
-                        onChange={() => setPaymentMethod('UPI / Online Paid')}
+                        checked={paymentMethod === 'Razorpay Gateway' || paymentMethod === 'UPI / Online Paid' || paymentMethod === 'Cards & E-Banking'}
+                        onChange={() => setPaymentMethod('Razorpay Gateway')}
+                        style={{ marginTop: 4 }}
                       />
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span>⚡ Instant UPI ID, Apps &amp; Wallets</span>
-                          <span style={{ fontSize: 11, background: '#dcfce7', color: '#15803d', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Recommended</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
+                          <div style={{ fontWeight: 800, fontSize: 16, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span>⚡ Razorpay Official Gateway</span>
+                            <span style={{ fontSize: 10, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 4, fontWeight: 800 }}>
+                              OFFICIAL CHECKOUT POPUP
+                            </span>
+                          </div>
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>UPI ID (VPA Collect), Google Pay, PhonePe, Paytm, CRED, BHIM (Razorpay Gateway)</div>
+                        <div style={{ fontSize: 13, color: '#475569', lineHeight: 1.4, marginBottom: 8 }}>
+                          Google Pay, PhonePe, Paytm, Any UPI ID, Cards (Visa/Mastercard/RuPay), &amp; 50+ Banks via official Razorpay modal.
+                        </div>
+
+                        {/* Razorpay Test Sandbox Guidance Box */}
+                        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8, padding: '10px 12px', fontSize: 12 }}>
+                          <div style={{ fontWeight: 700, color: '#1e40af', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span>🧪</span> Razorpay Test Mode Active ({process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TUEl7SyeNdN6Rx'})
+                          </div>
+                          <div style={{ color: '#475569', lineHeight: 1.4 }}>
+                            Click <strong>Place Order &amp; Pay</strong> below to trigger Razorpay's official checkout window. In the popup, choose <strong>Card</strong> (<code>4100 2800 0000 1007</code>, <code>12/26</code>, <code>123</code>) or <strong>UPI</strong> (<code>success@razorpay</code>), and click <strong>Success</strong>.
+                          </div>
+                        </div>
                       </div>
                     </label>
 
-                    {/* Inline Customer UPI ID Input */}
-                    {paymentMethod === 'UPI / Online Paid' && (
-                      <div style={{ padding: 14, background: '#f8fafc', borderRadius: 10, border: '1px solid #cbd5e1', marginTop: -4, marginBottom: 4 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                          <label style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
-                            ENTER YOUR UPI ID / VPA (OPTIONAL):
-                          </label>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            <button
-                              type="button"
-                              onClick={() => setCustomerUPI('success@razorpay')}
-                              style={{
-                                background: '#dcfce7',
-                                border: '1px solid #86efac',
-                                borderRadius: 4,
-                                padding: '2px 8px',
-                                fontSize: 11,
-                                fontWeight: 700,
-                                color: '#15803d',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              ⚡ Fill success@razorpay
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setCustomerUPI('test@razorpay')}
-                              style={{
-                                background: '#eff6ff',
-                                border: '1px solid #bfdbfe',
-                                borderRadius: 4,
-                                padding: '2px 8px',
-                                fontSize: 11,
-                                fontWeight: 600,
-                                color: '#1d4ed8',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              test@razorpay
-                            </button>
-                          </div>
-                        </div>
-                        <input
-                          type="text"
-                          placeholder="e.g. username@okhdfcbank or test@razorpay"
-                          value={customerUPI}
-                          onChange={e => setCustomerUPI(e.target.value.trim())}
-                          style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13 }}
-                        />
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-                          {['@okaxis', '@okhdfcbank', '@okicici', '@paytm', '@ybl'].map(handle => (
-                            <button
-                              key={handle}
-                              type="button"
-                              onClick={() => {
-                                const base = customerUPI.split('@')[0] || 'user';
-                                setCustomerUPI(`${base}${handle}`);
-                              }}
-                              style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '2px 6px', borderRadius: 4, fontSize: 10, color: '#475569', cursor: 'pointer' }}
-                            >
-                              {handle}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Option 2: Cards & E-Banking / NetBanking */}
+                    {/* Option 2: Cash on Delivery */}
                     <label
                       style={{
                         display: 'flex',
@@ -753,20 +703,20 @@ export default function Checkout() {
                         gap: 14,
                         padding: 14,
                         borderRadius: 10,
-                        border: paymentMethod === 'Cards & E-Banking' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                        background: paymentMethod === 'Cards & E-Banking' ? '#fff5f5' : '#fff',
+                        border: paymentMethod === 'Cash on Delivery' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                        background: paymentMethod === 'Cash on Delivery' ? '#fff5f5' : '#fff',
                         cursor: 'pointer'
                       }}
                     >
                       <input
                         type="radio"
                         name="payment"
-                        checked={paymentMethod === 'Cards & E-Banking'}
-                        onChange={() => setPaymentMethod('Cards & E-Banking')}
+                        checked={paymentMethod === 'Cash on Delivery'}
+                        onChange={() => setPaymentMethod('Cash on Delivery')}
                       />
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 15 }}>💳 Credit / Debit Cards &amp; E-Banking</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Visa, MasterCard, RuPay, Maestro &amp; Net Banking across all 50+ Indian Banks</div>
+                        <div style={{ fontWeight: 700, fontSize: 15 }}>💵 Cash on Delivery (COD)</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pay cash or UPI upon package delivery at your doorstep</div>
                       </div>
                     </label>
 
@@ -790,33 +740,8 @@ export default function Checkout() {
                         onChange={() => setPaymentMethod('Direct Merchant UPI')}
                       />
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 15 }}>📲 Direct Merchant UPI Transfer</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Scan Assam Kitchen QR code directly with any UPI app &amp; enter 12-digit UTR</div>
-                      </div>
-                    </label>
-
-                    {/* Option 4: Cash on Delivery */}
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 14,
-                        padding: 14,
-                        borderRadius: 10,
-                        border: paymentMethod === 'Cash on Delivery' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                        background: paymentMethod === 'Cash on Delivery' ? '#fff5f5' : '#fff',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        checked={paymentMethod === 'Cash on Delivery'}
-                        onChange={() => setPaymentMethod('Cash on Delivery')}
-                      />
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: 15 }}>💵 Cash on Delivery (COD)</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pay cash or UPI upon package delivery at your doorstep</div>
+                        <div style={{ fontWeight: 700, fontSize: 15 }}>📲 Direct Merchant UPI Transfer (Offline)</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Scan Assam Kitchen QR code directly with merchant UPI <code>upakashyap319@okicici</code></div>
                       </div>
                     </label>
                   </div>
