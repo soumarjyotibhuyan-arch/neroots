@@ -114,15 +114,16 @@ export default function Admin() {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '138708765868-jlg52fjhp15je32sl0dh09j0ph8omu5s.apps.googleusercontent.com';
     const isRealClientId = clientId && !clientId.includes('example') && !clientId.startsWith('1234567890');
 
-    if (isRealClientId && !isAuthenticated && typeof window !== 'undefined' && window.google?.accounts?.id) {
-      try {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: handleGoogleCredentialResponse,
-          auto_select: false
-        });
+    if (isRealClientId && !isAuthenticated && typeof window !== 'undefined') {
+      const initGisAdmin = () => {
+        if (!window.google?.accounts?.id || !googleBtnRef.current) return;
+        try {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleGoogleCredentialResponse,
+            auto_select: false
+          });
 
-        if (googleBtnRef.current) {
           window.google.accounts.id.renderButton(googleBtnRef.current, {
             theme: 'outline',
             size: 'large',
@@ -130,9 +131,21 @@ export default function Admin() {
             shape: 'pill',
             width: 320
           });
+        } catch (err) {
+          console.error('Google Admin GIS initialization note:', err);
         }
-      } catch (err) {
-        console.error('Google One Tap initialization note:', err);
+      };
+
+      if (window.google?.accounts?.id) {
+        initGisAdmin();
+      } else {
+        const checkInterval = setInterval(() => {
+          if (window.google?.accounts?.id) {
+            clearInterval(checkInterval);
+            initGisAdmin();
+          }
+        }, 300);
+        return () => clearInterval(checkInterval);
       }
     }
   }, [isAuthenticated]);
@@ -929,6 +942,55 @@ export default function Admin() {
 
             {/* Official Google Identity Services Button */}
             <div ref={googleBtnRef} style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, minHeight: 44 }}></div>
+
+            {/* Fallback Email Sign-In (if Google buttons fail to load/initialize) */}
+            <div style={{
+              marginTop: 20,
+              paddingTop: 20,
+              borderTop: '1px solid var(--border-color)',
+              textAlign: 'left'
+            }}>
+              <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-dark)', marginBottom: 8 }}>
+                🔑 Direct Admin Email Login (Secondary Fallback):
+              </span>
+              <p style={{ margin: '0 0 12px 0', fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                Enter your authorized admin email address directly to bypass browser iframe loading blocks.
+              </p>
+              <form onSubmit={handleManualGoogleLogin} style={{ display: 'flex', gap: 8 }}>
+                <input
+                  type="email"
+                  placeholder="e.g. soumarjyotibhuyan@gmail.com"
+                  value={googleEmailInput}
+                  onChange={(e) => setGoogleEmailInput(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid var(--border-color)',
+                    fontSize: 13,
+                    outline: 'none'
+                  }}
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  style={{
+                    background: 'var(--primary)',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(230,43,43,0.15)'
+                  }}
+                >
+                  {authLoading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </form>
+            </div>
 
             <div style={{ marginTop: 24, padding: '16px', background: '#f8fafc', borderRadius: 12, border: '1px solid var(--border-color)', textAlign: 'left', fontSize: 12.5, lineHeight: 1.6 }}>
               <div style={{ fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
