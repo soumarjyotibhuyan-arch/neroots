@@ -12,9 +12,9 @@ export default function handler(req, res) {
   db.companyStory = db.companyStory || {};
 
   // -------------------------------------------------------------
-  // GET: FETCH TEAM & STORY (Public)
+  // GET / HEAD: FETCH TEAM & STORY (Public)
   // -------------------------------------------------------------
-  if (req.method === 'GET') {
+  if (req.method === 'GET' || req.method === 'HEAD') {
     return res.status(200).json({
       team: db.team,
       companyStory: db.companyStory

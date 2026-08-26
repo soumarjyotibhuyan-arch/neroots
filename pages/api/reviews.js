@@ -16,9 +16,9 @@ export default function handler(req, res) {
   }
 
   // -------------------------------------------------------------
-  // GET: FETCH REVIEWS
+  // GET / HEAD: FETCH REVIEWS
   // -------------------------------------------------------------
-  if (req.method === 'GET') {
+  if (req.method === 'GET' || req.method === 'HEAD') {
     const { flavour, rating } = req.query;
     let reviews = [...db.reviews];
 

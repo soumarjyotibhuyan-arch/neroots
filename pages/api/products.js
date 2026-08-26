@@ -15,9 +15,9 @@ export default function handler(req, res) {
   const db = getDB();
 
   // -------------------------------------------------------------
-  // PUBLIC READ: GET PRODUCTS
+  // PUBLIC READ: GET / HEAD PRODUCTS
   // -------------------------------------------------------------
-  if (req.method === 'GET') {
+  if (req.method === 'GET' || req.method === 'HEAD') {
     const { category, search, id } = req.query;
     let products = [...(db.products || [])];
 
