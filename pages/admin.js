@@ -931,13 +931,14 @@ export default function Admin() {
                             fontWeight: 700,
                             fontSize: 13,
                             border: '1px solid var(--border-color)',
-                            background: order.status === 'Delivered' ? '#d8f3dc' : order.status === 'Shipped' ? '#e0f2fe' : '#fef3c7',
-                            color: order.status === 'Delivered' ? '#1b4332' : order.status === 'Shipped' ? '#0369a1' : '#92400e',
+                            background: order.status === 'Delivered' ? '#d8f3dc' : order.status === 'Shipped' ? '#e0f2fe' : order.status?.includes('UPI') ? '#e0e7ff' : '#fef3c7',
+                            color: order.status === 'Delivered' ? '#1b4332' : order.status === 'Shipped' ? '#0369a1' : order.status?.includes('UPI') ? '#3730a3' : '#92400e',
                             cursor: 'pointer'
                           }}
                         >
                           <option value="Pending (Cash on Delivery)">Pending (Cash on Delivery)</option>
-                          <option value="Confirmed (Online Paid)">Confirmed (Online Paid)</option>
+                          <option value="Pending Verification (UPI Paid)">Pending Verification (UPI Paid) 📱</option>
+                          <option value="Confirmed (Online Paid)">Confirmed (Online Paid) 💳</option>
                           <option value="Preparing in Kitchen">Preparing in Kitchen 👩‍🍳</option>
                           <option value="Shipped">Shipped 🚚</option>
                           <option value="Delivered">Delivered ✅</option>
@@ -957,6 +958,12 @@ export default function Admin() {
                             </div>
                           ))}
                         </div>
+
+                        {order.upiUtr && (
+                          <div style={{ marginTop: 10, padding: '8px 12px', background: '#eef2ff', borderRadius: 6, fontSize: 13, color: '#3730a3' }}>
+                            <strong>📲 UPI Reference / UTR:</strong> {order.upiUtr}
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -965,7 +972,7 @@ export default function Admin() {
                         {order.notes && <p style={{ marginTop: 6, fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>Note: &quot;{order.notes}&quot;</p>}
 
                         <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 16 }}>
-                          <span>Total ({order.paymentMethod}):</span>
+                          <span>Total ({order.paymentMethod || 'Paid'}):</span>
                           <span style={{ color: 'var(--primary-dark)' }}>₹{order.total}</span>
                         </div>
                       </div>

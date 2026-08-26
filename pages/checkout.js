@@ -124,7 +124,7 @@ export default function Checkout() {
       }
 
       // -------------------------------------------------------------
-      // 2. UNIFIED ONLINE PAYMENT (RAZORPAY STANDARD WEB CHECKOUT)
+      // 2. DIRECT MERCHANT UPI QR (SCAN & SUBMIT UTR)
       // -------------------------------------------------------------
       const orderInitRes = await fetch('/api/create-order', {
         method: 'POST',
@@ -148,7 +148,22 @@ export default function Checkout() {
         return;
       }
 
-      // Ensure Razorpay SDK script is loaded in browser
+      if (paymentMethod === 'Direct Merchant UPI') {
+        setPendingPaymentOrder({
+          orderId: orderData.storeOrderId,
+          gatewayOrderId: orderData.order_id || orderData.orderId,
+          amountRupees: orderData.amountRupees,
+          customerName: name.trim(),
+          customerPhone: phone.trim()
+        });
+        setIsUPIModalOpen(true);
+        setLoading(false);
+        return;
+      }
+
+      // -------------------------------------------------------------
+      // 3. RAZORPAY STANDARD (UPI APPS, CARDS, NETBANKING)
+      // -------------------------------------------------------------
       const isLoaded = await new Promise((resolve) => {
         if (typeof window !== 'undefined' && window.Razorpay) {
           return resolve(true);
@@ -228,7 +243,8 @@ export default function Checkout() {
           orderId: orderData.storeOrderId,
           gatewayOrderId: orderData.order_id || orderData.orderId,
           amountRupees: orderData.amountRupees,
-          customerName: name.trim()
+          customerName: name.trim(),
+          customerPhone: phone.trim()
         });
         setIsUPIModalOpen(true);
       }
@@ -628,6 +644,85 @@ export default function Checkout() {
                   </h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {/* Option 1: Instant UPI Apps */}
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        padding: 14,
+                        borderRadius: 10,
+                        border: paymentMethod === 'UPI / Online Paid' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                        background: paymentMethod === 'UPI / Online Paid' ? '#fff5f5' : '#fff',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="payment"
+                        checked={paymentMethod === 'UPI / Online Paid'}
+                        onChange={() => setPaymentMethod('UPI / Online Paid')}
+                      />
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span>⚡ Instant UPI &amp; Wallets</span>
+                          <span style={{ fontSize: 11, background: '#dcfce7', color: '#15803d', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Recommended</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Google Pay, PhonePe, Paytm, CRED, BHIM &amp; QR (Instant Auto-Verification)</div>
+                      </div>
+                    </label>
+
+                    {/* Option 2: Cards & E-Banking / NetBanking */}
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        padding: 14,
+                        borderRadius: 10,
+                        border: paymentMethod === 'Cards & E-Banking' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                        background: paymentMethod === 'Cards & E-Banking' ? '#fff5f5' : '#fff',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="payment"
+                        checked={paymentMethod === 'Cards & E-Banking'}
+                        onChange={() => setPaymentMethod('Cards & E-Banking')}
+                      />
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 15 }}>💳 Credit / Debit Cards &amp; E-Banking</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Visa, MasterCard, RuPay, Maestro &amp; Net Banking across all 50+ Indian Banks</div>
+                      </div>
+                    </label>
+
+                    {/* Option 3: Direct Merchant UPI Scan */}
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        padding: 14,
+                        borderRadius: 10,
+                        border: paymentMethod === 'Direct Merchant UPI' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                        background: paymentMethod === 'Direct Merchant UPI' ? '#fff5f5' : '#fff',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="payment"
+                        checked={paymentMethod === 'Direct Merchant UPI'}
+                        onChange={() => setPaymentMethod('Direct Merchant UPI')}
+                      />
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 15 }}>📲 Direct Merchant UPI Transfer</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Scan Assam Kitchen QR code directly with any UPI app &amp; enter 12-digit UTR</div>
+                      </div>
+                    </label>
+
+                    {/* Option 4: Cash on Delivery */}
                     <label
                       style={{
                         display: 'flex',
@@ -648,31 +743,7 @@ export default function Checkout() {
                       />
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 15 }}>💵 Cash on Delivery (COD)</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pay cash or UPI upon package delivery at your door</div>
-                      </div>
-                    </label>
-
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 14,
-                        padding: 14,
-                        borderRadius: 10,
-                        border: paymentMethod === 'UPI / Online Paid' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                        background: paymentMethod === 'UPI / Online Paid' ? '#fff5f5' : '#fff',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        checked={paymentMethod === 'UPI / Online Paid'}
-                        onChange={() => setPaymentMethod('UPI / Online Paid')}
-                      />
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: 15 }}>📱 Instant UPI &amp; Cards (Encrypted Gateway)</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pay securely via GPay, PhonePe, Paytm, or Credit/Debit Cards</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pay cash or UPI upon package delivery at your doorstep</div>
                       </div>
                     </label>
                   </div>
@@ -810,6 +881,7 @@ export default function Checkout() {
           orderId={pendingPaymentOrder.orderId}
           gatewayOrderId={pendingPaymentOrder.gatewayOrderId}
           customerName={pendingPaymentOrder.customerName}
+          customerPhone={pendingPaymentOrder.customerPhone}
           isMobile={isMobile}
           onPaymentSuccess={(confirmedOrder) => {
             setIsUPIModalOpen(false);
