@@ -328,40 +328,19 @@ export default function TrackOrder() {
             Enter the Order ID (e.g. <strong>PKL-4321</strong>) printed on your receipt or sent via WhatsApp to view real-time shipping updates.
           </p>
 
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: 10, maxWidth: 520, margin: '0 auto' }}>
+          <form onSubmit={handleSearchSubmit} className="track-search-form">
             <input
               type="text"
               placeholder="Enter Order ID (e.g. PKL-1234)"
               value={orderIdInput}
               onChange={e => setOrderIdInput(e.target.value)}
-              style={{
-                flex: 1,
-                padding: '12px 18px',
-                borderRadius: 'var(--radius-full)',
-                border: '1.5px solid var(--border-color)',
-                fontSize: 15,
-                fontWeight: 600,
-                outline: 'none',
-                transition: 'border-color 0.2s',
-                textAlign: 'center'
-              }}
+              className="track-search-input-field"
               required
             />
             <button
               type="submit"
               disabled={loading}
-              style={{
-                background: 'var(--primary)',
-                color: '#fff',
-                padding: '12px 28px',
-                borderRadius: 'var(--radius-full)',
-                fontWeight: 700,
-                fontSize: 15,
-                border: 'none',
-                cursor: 'pointer',
-                opacity: loading ? 0.7 : 1,
-                boxShadow: '0 4px 12px rgba(230,43,43,0.2)'
-              }}
+              className="track-search-submit-btn"
             >
               {loading ? 'Searching...' : 'Track'}
             </button>
@@ -634,20 +613,8 @@ export default function TrackOrder() {
 
             {/* Automated Alerts Opt-In Card */}
             {order && (
-              <div style={{
-                background: '#f8fafc',
-                border: '1px solid #cbd5e1',
-                borderRadius: 'var(--radius-md)',
-                padding: '16px 20px',
-                marginBottom: 28,
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 14
-              }}>
-                <div style={{ flex: 1, minWidth: 240 }}>
+              <div className="track-action-card alerts-optin-card">
+                <div className="track-card-text">
                   <div style={{ fontWeight: 800, fontSize: 13.5, color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span>🔔</span> Automated Dispatch Alerts
                   </div>
@@ -657,7 +624,7 @@ export default function TrackOrder() {
                 </div>
 
                 {subscribedAlerts ? (
-                  <div style={{ color: '#15803d', background: '#dcfce7', padding: '6px 14px', borderRadius: 20, fontSize: 12.5, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div className="alerts-active-badge">
                     ✓ Alerts Active (WhatsApp & SMS)
                   </div>
                 ) : (
@@ -667,17 +634,7 @@ export default function TrackOrder() {
                       setSubscribedAlerts(true);
                       showToast('🎉 Subscribed successfully to automated SMS & WhatsApp order updates!');
                     }}
-                    style={{
-                      background: 'var(--primary)',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: 20,
-                      fontSize: 12,
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 6px rgba(230, 43, 43, 0.15)'
-                    }}
+                    className="track-action-btn alerts-act-btn"
                   >
                     Activate Alerts 🔔
                   </button>
@@ -687,20 +644,8 @@ export default function TrackOrder() {
 
             {/* Direct Grievance Access Callout */}
             {order && (
-              <div style={{
-                background: '#fef2f2',
-                border: '1px solid #fee2e2',
-                borderRadius: 'var(--radius-md)',
-                padding: '14px 18px',
-                marginBottom: 28,
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 12
-              }}>
-                <div style={{ flex: 1, minWidth: 220 }}>
+              <div className="track-action-card grievance-callout-card">
+                <div className="track-card-text">
                   <span style={{ fontWeight: 800, fontSize: 13, color: '#991b1b', display: 'flex', alignItems: 'center', gap: 6 }}>
                     ⚠️ Transit Inquiries &amp; Delivery Delays
                   </span>
@@ -710,15 +655,7 @@ export default function TrackOrder() {
                 </div>
                 <Link
                   href="/grievance"
-                  style={{
-                    background: '#991b1b',
-                    color: '#ffffff',
-                    padding: '6px 14px',
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    textDecoration: 'none'
-                  }}
+                  className="track-action-btn grievance-btn"
                 >
                   File Grievance ⚖️
                 </Link>
@@ -773,18 +710,7 @@ export default function TrackOrder() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  background: '#25D366',
-                  color: '#fff',
-                  padding: '12px 24px',
-                  borderRadius: 'var(--radius-full)',
-                  fontWeight: 700,
-                  fontSize: 14,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  boxShadow: '0 4px 12px rgba(37, 211, 102, 0.25)'
-                }}
+                className="track-whatsapp-btn"
               >
                 <span>💬</span> WhatsApp Store Owner for Verification
               </a>

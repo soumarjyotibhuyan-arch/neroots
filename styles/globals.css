@@ -1886,4 +1886,198 @@ html, body {
   overflow-x: clip;
 }
 
+/* ==========================================================================
+   8. TRACK PAGE & ACTION CARDS RESPONSIVE LAYOUT
+   ========================================================================== */
+.track-search-form {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.track-search-input-field {
+  flex: 1;
+  padding: 12px 18px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border-color);
+  font-size: 15px;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s;
+  text-align: center;
+  background-color: #ffffff;
+}
+
+.track-search-input-field:focus {
+  border-color: var(--primary);
+}
+
+.track-search-submit-btn {
+  background: var(--primary);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(230,43,43,0.2);
+  transition: all 0.2s ease;
+}
+
+.track-search-submit-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* Action Cards */
+.track-action-card {
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.alerts-optin-card {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+}
+
+.grievance-callout-card {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+}
+
+.track-card-text {
+  flex: 1;
+  min-width: 240px;
+}
+
+.track-action-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.alerts-act-btn {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(230, 43, 43, 0.15);
+}
+
+.alerts-act-btn:hover {
+  background: var(--primary-dark);
+}
+
+.alerts-active-badge {
+  color: #15803d;
+  background: #dcfce7;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 12.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.grievance-btn {
+  background: #991b1b;
+  color: #ffffff;
+}
+
+.grievance-btn:hover {
+  background: #7f1d1d;
+}
+
+/* WhatsApp support button */
+.track-whatsapp-btn {
+  background: #25D366;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+  transition: all 0.2s ease;
+  max-width: 100%;
+  text-align: center;
+}
+
+.track-whatsapp-btn:hover {
+  background: #128C7E;
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
+}
+
+/* Mobile Media Queries for track components */
+@media (max-width: 520px) {
+  .track-search-form {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .track-search-input-field {
+    width: 100%;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+  
+  .track-search-submit-btn {
+    width: 100%;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .track-action-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .track-card-text {
+    min-width: unset;
+  }
+
+  .track-action-btn {
+    width: 100%;
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .alerts-active-badge {
+    width: 100%;
+    justify-content: center;
+    border-radius: var(--radius-md);
+  }
+
+  .track-whatsapp-btn {
+    width: 100%;
+    border-radius: var(--radius-md);
+    padding: 12px 18px;
+    font-size: 13px;
+  }
+}
+
 
