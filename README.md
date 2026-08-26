@@ -13,7 +13,7 @@
 ## 🌐 Live Storefront & Demo
 
 * **Production URL:** [https://neroots.vercel.app](https://neroots.vercel.app)
-* **GitHub Repository:** [soumarjyotibhuyan-arch/pickle-storeV2](https://github.com/soumarjyotibhuyan-arch/neroots)
+* **GitHub Repository:** [soumarjyotibhuyan-arch/neroots](https://github.com/soumarjyotibhuyan-arch/neroots)
 
 ---
 
