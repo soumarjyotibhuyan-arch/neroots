@@ -184,7 +184,7 @@ export default function Checkout() {
           currency: orderData.currency || 'INR',
           name: 'NE Roots (North East Roots)',
           description: `Assam Artisanal Pickles • Order #${orderData.storeOrderId}`,
-          image: '/images/ner_logo_icon.jpg',
+          image: 'https://neroots.vercel.app/images/ner_logo_icon.jpg',
           order_id: orderData.order_id || orderData.orderId,
           prefill: {
             name: name.trim(),

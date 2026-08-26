@@ -239,11 +239,11 @@ export default function DynamicUPIQRModal({
             {activeTab === 'intent' && (
               <div style={{ padding: '4px 0 12px' }}>
                 <p style={{ fontSize: 13, color: 'var(--text-dark)', marginBottom: 12 }}>
-                  Tap your preferred UPI app to open and pay ₹{amountRupees}:
+                  Tap below to open your preferred UPI app and pay ₹{amountRupees}:
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <a
-                    href={`gpay://upi/pay?pa=${vpa}&pn=${encodeURIComponent('NE Roots Pickles')}&am=${amountRupees}&cu=INR&tn=${encodeURIComponent(`Order #${orderId}`)}`}
+                    href={upiUri}
                     className="upi-app-button"
                     style={{
                       display: 'flex',
@@ -258,14 +258,15 @@ export default function DynamicUPIQRModal({
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48
+                      minHeight: 48,
+                      textDecoration: 'none'
                     }}
                   >
                     <span>🔵</span> Google Pay
                   </a>
 
                   <a
-                    href={`phonepe://pay?pa=${vpa}&pn=${encodeURIComponent('NE Roots Pickles')}&am=${amountRupees}&cu=INR&tn=${encodeURIComponent(`Order #${orderId}`)}`}
+                    href={upiUri}
                     className="upi-app-button"
                     style={{
                       display: 'flex',
@@ -280,14 +281,15 @@ export default function DynamicUPIQRModal({
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48
+                      minHeight: 48,
+                      textDecoration: 'none'
                     }}
                   >
                     <span>🟣</span> PhonePe
                   </a>
 
                   <a
-                    href={`paytmmp://pay?pa=${vpa}&pn=${encodeURIComponent('NE Roots Pickles')}&am=${amountRupees}&cu=INR&tn=${encodeURIComponent(`Order #${orderId}`)}`}
+                    href={upiUri}
                     className="upi-app-button"
                     style={{
                       display: 'flex',
@@ -302,7 +304,8 @@ export default function DynamicUPIQRModal({
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48
+                      minHeight: 48,
+                      textDecoration: 'none'
                     }}
                   >
                     <span>🔷</span> Paytm UPI
@@ -324,10 +327,11 @@ export default function DynamicUPIQRModal({
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
-                      minHeight: 48
+                      minHeight: 48,
+                      textDecoration: 'none'
                     }}
                   >
-                    <span>⚡</span> Other UPI Apps
+                    <span>⚡</span> Any UPI App
                   </a>
                 </div>
               </div>
