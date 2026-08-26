@@ -50,6 +50,7 @@ export default async function handler(req, res) {
   // -------------------------------------------------------------
   if (req.method === 'POST') {
     try {
+      const sanitizedBody = sanitizeObject(req.body) || {};
       const { credential, profile } = sanitizedBody;
 
       let googleUser;
